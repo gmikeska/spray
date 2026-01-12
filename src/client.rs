@@ -1,6 +1,5 @@
 //! NodeClient implementation for ElementsD
 
-use crate::error::SprayError;
 use elementsd::bitcoind::bitcoincore_rpc::RpcApi;
 use elementsd::ElementsD;
 use musk::client::{ClientResult, NodeClient, Utxo};
@@ -101,7 +100,7 @@ impl<'a> NodeClient for ElementsClient<'a> {
         Ok(hashes)
     }
 
-    fn get_utxos(&self, address: &Address) -> ClientResult<Vec<Utxo>> {
+    fn get_utxos(&self, _address: &Address) -> ClientResult<Vec<Utxo>> {
         // This is a simplified implementation
         // In a real implementation, you'd use listunspent or similar
         Ok(Vec::new())
@@ -114,7 +113,10 @@ impl<'a> NodeClient for ElementsClient<'a> {
             .get_new_address(None, None)
             .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?;
 
-        Ok(addr.assume_checked())
+        // Convert bitcoin::Address to elements::Address
+        let addr_str = addr.assume_checked().to_string();
+        Address::from_str(&addr_str)
+            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))
     }
 }
 

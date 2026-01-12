@@ -24,35 +24,36 @@ impl TestRunner {
 
     /// Run a single test case
     pub fn run_test(&self, mut test: TestCase) -> TestResult {
-        println!("{} {}", "⏳".yellow(), test.name.bold());
+        let test_name = test.name.clone();
+        println!("{} {}", "⏳".yellow(), test_name.bold());
 
         // Create UTXO
         if let Err(e) = test.create_utxo() {
             let error = format!("Failed to create UTXO: {}", e);
-            println!("{} {}: {}", "❌".red(), test.name.bold(), error.red());
+            println!("{} {}: {}", "❌".red(), test_name.bold(), error.red());
             return TestResult::Failure { error };
         }
 
         // Generate blocks to confirm the funding transaction
         if let Err(e) = self.env.generate(1) {
             let error = format!("Failed to generate blocks: {}", e);
-            println!("{} {}: {}", "❌".red(), test.name.bold(), error.red());
+            println!("{} {}: {}", "❌".red(), test_name.bold(), error.red());
             return TestResult::Failure { error };
         }
 
         // Run the test
         match test.run() {
             Ok(TestResult::Success { txid }) => {
-                println!("{} {} (txid: {})", "✅".green(), test.name.bold(), txid);
+                println!("{} {} (txid: {})", "✅".green(), test_name.bold(), txid);
                 TestResult::Success { txid }
             }
             Ok(TestResult::Failure { error }) => {
-                println!("{} {}: {}", "❌".red(), test.name.bold(), error.red());
+                println!("{} {}: {}", "❌".red(), test_name.bold(), error.red());
                 TestResult::Failure { error }
             }
             Err(e) => {
                 let error = e.to_string();
-                println!("{} {}: {}", "❌".red(), test.name.bold(), error.red());
+                println!("{} {}: {}", "❌".red(), test_name.bold(), error.red());
                 TestResult::Failure { error }
             }
         }

@@ -1,6 +1,7 @@
 //! Test environment management
 
 use crate::error::SprayError;
+use elementsd::bitcoind::bitcoincore_rpc::RpcApi;
 use elementsd::ElementsD;
 use std::str::FromStr;
 
