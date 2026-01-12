@@ -2,16 +2,16 @@
 //!
 //! Run with: cargo test --example basic_tests
 
-use musk::{Contract, Arguments, WitnessValues};
-use spray::{TestRunner, TestCase};
+use musk::{Arguments, Contract, WitnessValues};
+use spray::{TestCase, TestRunner};
 
 #[test]
 fn test_cat_contract() {
     let runner = TestRunner::new().expect("Failed to create test runner");
 
     // Load the OP_CAT example from SimplicityHL
-    let contract = Contract::from_file("../SimplicityHL/examples/cat.simf")
-        .expect("Failed to load contract");
+    let contract =
+        Contract::from_file("../SimplicityHL/examples/cat.simf").expect("Failed to load contract");
 
     let compiled = contract
         .instantiate(Arguments::default())
@@ -34,8 +34,8 @@ fn test_p2pk_contract() {
     let runner = TestRunner::new().expect("Failed to create test runner");
 
     // Load P2PK contract
-    let contract = Contract::from_file("../SimplicityHL/examples/p2pk.simf")
-        .expect("Failed to load contract");
+    let contract =
+        Contract::from_file("../SimplicityHL/examples/p2pk.simf").expect("Failed to load contract");
 
     // Create arguments with public key
     let secret_key = 1u32;
@@ -102,4 +102,3 @@ fn test_multiple_contracts() {
     let all_success = results.iter().all(|r| r.is_success());
     assert!(all_success, "All tests should succeed");
 }
-

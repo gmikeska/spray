@@ -80,7 +80,9 @@ impl<'env> TestCase<'env> {
     /// Create a UTXO for this test by funding the contract address
     pub fn create_utxo(&mut self) -> Result<(), SprayError> {
         let client = ElementsClient::new(self.env.daemon());
-        let address = self.contract.address(&musk::elements::AddressParams::ELEMENTS);
+        let address = self
+            .contract
+            .address(&musk::elements::AddressParams::ELEMENTS);
 
         println!("  {} {}", "Creating UTXO at:".dimmed(), address);
 
@@ -107,7 +109,9 @@ impl<'env> TestCase<'env> {
             .get_transaction(&txid)
             .map_err(|e| SprayError::TestError(e.to_string()))?;
 
-        let address = self.contract.address(&musk::elements::AddressParams::ELEMENTS);
+        let address = self
+            .contract
+            .address(&musk::elements::AddressParams::ELEMENTS);
         let script = address.script_pubkey();
 
         // Find the output that matches our script
@@ -128,7 +132,9 @@ impl<'env> TestCase<'env> {
             }
         }
 
-        Err(SprayError::TestError("UTXO not found in transaction".into()))
+        Err(SprayError::TestError(
+            "UTXO not found in transaction".into(),
+        ))
     }
 
     /// Run the test
@@ -181,4 +187,3 @@ impl<'env> TestCase<'env> {
         Ok(TestResult::Success { txid })
     }
 }
-

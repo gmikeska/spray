@@ -29,4 +29,3 @@ pub enum SprayError {
     #[error("RPC error: {0}")]
     RpcError(String),
 }
-

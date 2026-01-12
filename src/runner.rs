@@ -105,4 +105,3 @@ impl Default for TestRunner {
         Self::new().expect("Failed to create test runner")
     }
 }
-

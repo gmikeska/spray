@@ -27,13 +27,27 @@ impl<'a> NodeClient for ElementsClient<'a> {
             .daemon
             .client()
             .call::<serde_json::Value>("sendtoaddress", &[addr_str.into(), amount_btc.into()])
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
+            .map_err(|e| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    e.to_string(),
+                ))
+            })?
             .as_str()
-            .ok_or_else(|| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, "Invalid txid response")))?
+            .ok_or_else(|| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Invalid txid response",
+                ))
+            })?
             .to_string();
 
-        Txid::from_str(&txid_str)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))
+        Txid::from_str(&txid_str).map_err(|e| {
+            musk::ContractError::IoError(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                e.to_string(),
+            ))
+        })
     }
 
     fn get_transaction(&self, txid: &Txid) -> ClientResult<Transaction> {
@@ -41,17 +55,35 @@ impl<'a> NodeClient for ElementsClient<'a> {
             .daemon
             .client()
             .call::<serde_json::Value>("gettransaction", &[txid.to_string().into()])
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
+            .map_err(|e| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    e.to_string(),
+                ))
+            })?
             .get("hex")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, "Invalid transaction hex")))?
+            .ok_or_else(|| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Invalid transaction hex",
+                ))
+            })?
             .to_string();
 
-        let tx_bytes = Vec::<u8>::from_hex(&tx_hex)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?;
+        let tx_bytes = Vec::<u8>::from_hex(&tx_hex).map_err(|e| {
+            musk::ContractError::IoError(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                e.to_string(),
+            ))
+        })?;
 
-        deserialize(&tx_bytes)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))
+        deserialize(&tx_bytes).map_err(|e| {
+            musk::ContractError::IoError(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                e.to_string(),
+            ))
+        })
     }
 
     fn broadcast(&self, tx: &Transaction) -> ClientResult<Txid> {
@@ -61,13 +93,27 @@ impl<'a> NodeClient for ElementsClient<'a> {
             .daemon
             .client()
             .call::<serde_json::Value>("sendrawtransaction", &[serialize_hex(tx).into()])
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
+            .map_err(|e| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    e.to_string(),
+                ))
+            })?
             .as_str()
-            .ok_or_else(|| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, "Invalid txid response")))?
+            .ok_or_else(|| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Invalid txid response",
+                ))
+            })?
             .to_string();
 
-        Txid::from_str(&txid_str)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))
+        Txid::from_str(&txid_str).map_err(|e| {
+            musk::ContractError::IoError(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                e.to_string(),
+            ))
+        })
     }
 
     fn generate_blocks(&self, count: u32) -> ClientResult<Vec<BlockHash>> {
@@ -76,28 +122,50 @@ impl<'a> NodeClient for ElementsClient<'a> {
             .daemon
             .client()
             .call::<serde_json::Value>("getnewaddress", &[])
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
+            .map_err(|e| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    e.to_string(),
+                ))
+            })?
             .as_str()
-            .ok_or_else(|| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, "Invalid address response")))?
+            .ok_or_else(|| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Invalid address response",
+                ))
+            })?
             .to_string();
 
         let result = self
             .daemon
             .client()
-            .call::<serde_json::Value>(
-                "generatetoaddress",
-                &[count.into(), address_str.into()],
-            )
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?;
+            .call::<serde_json::Value>("generatetoaddress", &[count.into(), address_str.into()])
+            .map_err(|e| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    e.to_string(),
+                ))
+            })?;
 
         let hashes = result
             .as_array()
-            .ok_or_else(|| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, "Invalid block hash array")))?
+            .ok_or_else(|| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Invalid block hash array",
+                ))
+            })?
             .iter()
             .filter_map(|v| v.as_str())
             .map(|s| BlockHash::from_str(s))
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?;
+            .map_err(|e| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    e.to_string(),
+                ))
+            })?;
 
         Ok(hashes)
     }
@@ -114,13 +182,26 @@ impl<'a> NodeClient for ElementsClient<'a> {
             .daemon
             .client()
             .call::<serde_json::Value>("getnewaddress", &[])
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
+            .map_err(|e| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    e.to_string(),
+                ))
+            })?
             .as_str()
-            .ok_or_else(|| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, "Invalid address response")))?
+            .ok_or_else(|| {
+                musk::ContractError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Invalid address response",
+                ))
+            })?
             .to_string();
 
-        Address::from_str(&addr_str)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))
+        Address::from_str(&addr_str).map_err(|e| {
+            musk::ContractError::IoError(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                e.to_string(),
+            ))
+        })
     }
 }
-

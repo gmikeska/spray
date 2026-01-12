@@ -94,15 +94,16 @@ fn main() -> Result<(), SprayError> {
             let compiled = contract.instantiate(arguments)?;
 
             // Create witness function
-            let witness_fn: Box<dyn Fn([u8; 32]) -> musk::WitnessValues> = if let Some(witness_path) = witness {
-                // Load witness from file
-                let witness_json = std::fs::read_to_string(witness_path)?;
-                let witness_values: musk::WitnessValues = serde_json::from_str(&witness_json)?;
-                Box::new(move |_sighash| witness_values.clone())
-            } else {
-                // Empty witness
-                Box::new(|_sighash| musk::WitnessValues::default())
-            };
+            let witness_fn: Box<dyn Fn([u8; 32]) -> musk::WitnessValues> =
+                if let Some(witness_path) = witness {
+                    // Load witness from file
+                    let witness_json = std::fs::read_to_string(witness_path)?;
+                    let witness_values: musk::WitnessValues = serde_json::from_str(&witness_json)?;
+                    Box::new(move |_sighash| witness_values.clone())
+                } else {
+                    // Empty witness
+                    Box::new(|_sighash| musk::WitnessValues::default())
+                };
 
             // Create test case
             let mut test = TestCase::new(runner.env(), compiled).name(&name);
@@ -138,4 +139,3 @@ fn main() -> Result<(), SprayError> {
 
     Ok(())
 }
-

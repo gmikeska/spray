@@ -95,10 +95,7 @@ impl TestEnv {
 
         self.daemon
             .client()
-            .call::<serde_json::Value>(
-                "generatetoaddress",
-                &[blocks.into(), address_str.into()],
-            )
+            .call::<serde_json::Value>("generatetoaddress", &[blocks.into(), address_str.into()])
             .map_err(|e| SprayError::RpcError(e.to_string()))?;
 
         Ok(())
@@ -110,4 +107,3 @@ impl Drop for TestEnv {
         // Daemon will be cleaned up automatically
     }
 }
-
