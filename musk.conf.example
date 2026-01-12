@@ -1,0 +1,91 @@
+# Musk Configuration Example
+# ==========================
+# 
+# This file shows how to configure musk to connect to Elements/Liquid nodes.
+# Copy to musk.toml and customize for your setup.
+#
+# Note: When using spray for testing, the node connection is managed 
+# automatically. This config is for standalone musk usage in production
+# applications.
+
+# =============================================================================
+# Network Configuration
+# =============================================================================
+[network]
+# Network type - determines default ports and address formats
+# Options:
+#   - "regtest"   : Local development/testing (default port: 18884)
+#   - "testnet"   : Liquid testnet (default port: 18892)
+#   - "liquidv1"  : Liquid mainnet (default port: 7041)
+network = "regtest"
+
+# =============================================================================
+# RPC Connection
+# =============================================================================
+[rpc]
+# Elements/Liquid node RPC endpoint
+url = "http://127.0.0.1:18884"
+
+# RPC authentication credentials
+# These should match your elements.conf settings:
+#   rpcuser=user
+#   rpcpassword=password
+user = "user"
+password = "password"
+
+# =============================================================================
+# Chain Configuration  
+# =============================================================================
+[chain]
+# Genesis block hash - required for transaction signing (sighash computation)
+# 
+# If not provided, musk will fetch it automatically from the node.
+# Specifying it here avoids an extra RPC call and ensures consistency.
+#
+# To find your genesis hash, run:
+#   elements-cli getblockhash 0
+#
+# Common genesis hashes:
+#   - Elements regtest: varies per chain (generated at chain creation)
+#   - Liquid testnet:   a771d8a8e75d8fa1b9bc08af6a5bde4f4fb4d7f01bd8b4b36e7cd97fb4b3d4e3
+#   - Liquid mainnet:   1466275836220db2944ca059a3a10ef6fd2ea684b0688d2c379296888a206003
+#
+# genesis_hash = "your-genesis-hash-here"
+
+# =============================================================================
+# Example Configurations
+# =============================================================================
+
+# --- Regtest (local development) ---
+# [network]
+# network = "regtest"
+# 
+# [rpc]
+# url = "http://127.0.0.1:18884"
+# user = "user"
+# password = "password"
+
+# --- Liquid Testnet ---
+# [network]
+# network = "testnet"
+# 
+# [rpc]
+# url = "http://127.0.0.1:18892"
+# user = "your-testnet-user"
+# password = "your-testnet-password"
+# 
+# [chain]
+# genesis_hash = "a771d8a8e75d8fa1b9bc08af6a5bde4f4fb4d7f01bd8b4b36e7cd97fb4b3d4e3"
+
+# --- Liquid Mainnet ---
+# [network]
+# network = "liquidv1"
+# 
+# [rpc]
+# url = "http://127.0.0.1:7041"
+# user = "your-mainnet-user"
+# password = "your-mainnet-password"
+# 
+# [chain]
+# genesis_hash = "1466275836220db2944ca059a3a10ef6fd2ea684b0688d2c379296888a206003"
+
