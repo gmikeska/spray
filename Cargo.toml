@@ -1,0 +1,28 @@
+[package]
+name = "spray"
+version = "0.1.0"
+authors = ["greg"]
+edition = "2021"
+rust-version = "1.79.0"
+license = "MIT OR Apache-2.0"
+description = "Testing workbench for Simplicity contracts on Elements/Liquid regtest"
+
+[[bin]]
+name = "spray"
+path = "src/main.rs"
+
+[lib]
+name = "spray"
+path = "src/lib.rs"
+
+[dependencies]
+musk = { path = "../musk" }
+elementsd = "0.11"
+clap = { version = "4", features = ["derive"] }
+colored = "2"
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+
