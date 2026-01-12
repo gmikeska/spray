@@ -71,13 +71,15 @@ impl<'a> NodeClient for ElementsClient<'a> {
     }
 
     fn generate_blocks(&self, count: u32) -> ClientResult<Vec<BlockHash>> {
-        let address = self
+        // Use raw RPC call to get Elements-formatted address
+        let address_str = self
             .daemon
             .client()
-            .get_new_address(None, None)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?;
-
-        let address_str = address.assume_checked().to_string();
+            .call::<serde_json::Value>("getnewaddress", &[])
+            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
+            .as_str()
+            .ok_or_else(|| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, "Invalid address response")))?
+            .to_string();
 
         let result = self
             .daemon
@@ -107,14 +109,16 @@ impl<'a> NodeClient for ElementsClient<'a> {
     }
 
     fn get_new_address(&self) -> ClientResult<Address> {
-        let addr = self
+        // Use raw RPC call to get Elements-formatted address
+        let addr_str = self
             .daemon
             .client()
-            .get_new_address(None, None)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?;
+            .call::<serde_json::Value>("getnewaddress", &[])
+            .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?
+            .as_str()
+            .ok_or_else(|| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, "Invalid address response")))?
+            .to_string();
 
-        // Convert bitcoin::Address to elements::Address
-        let addr_str = addr.assume_checked().to_string();
         Address::from_str(&addr_str)
             .map_err(|e| musk::ContractError::IoError(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))
     }

@@ -83,15 +83,15 @@ impl TestEnv {
 
     /// Generate blocks
     pub fn generate(&self, blocks: u32) -> Result<(), SprayError> {
-        use elementsd::bitcoind::bitcoincore_rpc::RpcApi;
-
-        let address = self
+        // Use raw RPC call to get Elements-formatted address
+        let address_str = self
             .daemon
             .client()
-            .get_new_address(None, None)
-            .map_err(|e| SprayError::RpcError(e.to_string()))?;
-
-        let address_str = address.assume_checked().to_string();
+            .call::<serde_json::Value>("getnewaddress", &[])
+            .map_err(|e| SprayError::RpcError(e.to_string()))?
+            .as_str()
+            .ok_or_else(|| SprayError::RpcError("Invalid address response".into()))?
+            .to_string();
 
         self.daemon
             .client()
