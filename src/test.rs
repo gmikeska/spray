@@ -16,12 +16,14 @@ pub enum TestResult {
 }
 
 impl TestResult {
-    pub fn is_success(&self) -> bool {
-        matches!(self, TestResult::Success { .. })
+    #[must_use]
+    pub const fn is_success(&self) -> bool {
+        matches!(self, Self::Success { .. })
     }
 
-    pub fn is_failure(&self) -> bool {
-        matches!(self, TestResult::Failure { .. })
+    #[must_use]
+    pub const fn is_failure(&self) -> bool {
+        matches!(self, Self::Failure { .. })
     }
 }
 
@@ -51,12 +53,14 @@ impl<'env> TestCase<'env> {
     }
 
     /// Set the test name
+    #[must_use]
     pub fn name(mut self, name: &str) -> Self {
         self.name = name.to_string();
         self
     }
 
     /// Set the witness function
+    #[must_use]
     pub fn witness<F>(mut self, f: F) -> Self
     where
         F: Fn([u8; 32]) -> WitnessValues + 'env,
@@ -66,25 +70,31 @@ impl<'env> TestCase<'env> {
     }
 
     /// Set the lock time
-    pub fn lock_time(mut self, lock_time: LockTime) -> Self {
+    #[must_use]
+    pub const fn lock_time(mut self, lock_time: LockTime) -> Self {
         self.lock_time = lock_time;
         self
     }
 
     /// Set the sequence number
-    pub fn sequence(mut self, sequence: Sequence) -> Self {
+    #[must_use]
+    pub const fn sequence(mut self, sequence: Sequence) -> Self {
         self.sequence = sequence;
         self
     }
 
     /// Create a UTXO for this test by funding the contract address
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if sending to the contract address fails.
     pub fn create_utxo(&mut self) -> Result<(), SprayError> {
         let client = ElementsClient::new(self.env.daemon());
         let address = self
             .contract
             .address(&musk::elements::AddressParams::ELEMENTS);
 
-        println!("  {} {}", "Creating UTXO at:".dimmed(), address);
+        println!("  {} {address}", "Creating UTXO at:".dimmed());
 
         // Send 1 BTC to the contract address
         let amount = 100_000_000; // 1 BTC in satoshis
@@ -93,7 +103,7 @@ impl<'env> TestCase<'env> {
             .map_err(|e| SprayError::TestError(e.to_string()))?;
 
         self.funding_txid = Some(txid);
-        println!("  {} {}", "Funding txid:".dimmed(), txid);
+        println!("  {} {txid}", "Funding txid:".dimmed());
 
         Ok(())
     }
@@ -117,13 +127,13 @@ impl<'env> TestCase<'env> {
         // Find the output that matches our script
         for (vout, txout) in tx.output.iter().enumerate() {
             if txout.script_pubkey == script {
-                let amount = match txout.value {
-                    confidential::Value::Explicit(amt) => amt,
-                    _ => continue,
+                let confidential::Value::Explicit(amount) = txout.value else {
+                    continue;
                 };
 
                 return Ok(Utxo {
                     txid,
+                    #[allow(clippy::cast_possible_truncation)]
                     vout: vout as u32,
                     amount,
                     script_pubkey: txout.script_pubkey.clone(),
@@ -138,6 +148,11 @@ impl<'env> TestCase<'env> {
     }
 
     /// Run the test
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the UTXO cannot be retrieved, the transaction
+    /// cannot be built, or broadcasting fails.
     pub fn run(self) -> Result<TestResult, SprayError> {
         let client = ElementsClient::new(self.env.daemon());
 
@@ -145,9 +160,8 @@ impl<'env> TestCase<'env> {
         let utxo = self.get_utxo()?;
 
         // Get the asset
-        let asset = match utxo.asset {
-            confidential::Asset::Explicit(id) => id,
-            _ => return Err(SprayError::TestError("Non-explicit asset".into())),
+        let confidential::Asset::Explicit(asset) = utxo.asset else {
+            return Err(SprayError::TestError("Non-explicit asset".into()));
         };
 
         // Build the spending transaction
@@ -182,7 +196,7 @@ impl<'env> TestCase<'env> {
         // Broadcast
         let txid = client
             .broadcast(&tx)
-            .map_err(|e| SprayError::TestError(format!("Failed to broadcast: {}", e)))?;
+            .map_err(|e| SprayError::TestError(format!("Failed to broadcast: {e}")))?;
 
         Ok(TestResult::Success { txid })
     }

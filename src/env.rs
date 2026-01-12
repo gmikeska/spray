@@ -13,6 +13,16 @@ pub struct TestEnv {
 
 impl TestEnv {
     /// Create a new test environment with a fresh regtest daemon
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the daemon fails to start, wallet creation fails,
+    /// or the genesis hash cannot be retrieved.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `elementsd::exe_path()` returns `None`, indicating the
+    /// `elementsd` executable is not found.
     pub fn new() -> Result<Self, SprayError> {
         let mut conf = elementsd::Conf::new(None);
 
@@ -26,7 +36,7 @@ impl TestEnv {
         match arg_pos {
             Some(i) => conf.0.args[i] = "-initialfreecoins=210000000000",
             None => conf.0.args.push("-initialfreecoins=210000000000"),
-        };
+        }
 
         // Enable Simplicity
         conf.0.args.push("-evbparams=simplicity:-1:::");
@@ -72,16 +82,22 @@ impl TestEnv {
     }
 
     /// Get a reference to the daemon
-    pub fn daemon(&self) -> &ElementsD {
+    #[must_use]
+    pub const fn daemon(&self) -> &ElementsD {
         &self.daemon
     }
 
     /// Get the genesis block hash
-    pub fn genesis_hash(&self) -> musk::elements::BlockHash {
+    #[must_use]
+    pub const fn genesis_hash(&self) -> musk::elements::BlockHash {
         self.genesis_hash
     }
 
     /// Generate blocks
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the RPC call to generate blocks fails.
     pub fn generate(&self, blocks: u32) -> Result<(), SprayError> {
         // Use raw RPC call to get Elements-formatted address
         let address_str = self

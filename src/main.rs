@@ -82,7 +82,7 @@ fn main() -> Result<(), SprayError> {
             // Load arguments if provided
             let arguments = if let Some(args_path) = args {
                 if verbose {
-                    println!("{} {:?}", "Loading arguments from:".dimmed(), args_path);
+                    println!("{} {}", "Loading arguments from:".dimmed(), args_path.display());
                 }
                 let args_json = std::fs::read_to_string(args_path)?;
                 serde_json::from_str(&args_json)?
@@ -108,7 +108,7 @@ fn main() -> Result<(), SprayError> {
             // Create test case
             let mut test = TestCase::new(runner.env(), compiled).name(&name);
 
-            test = test.witness(move |sighash| witness_fn(sighash));
+            test = test.witness(witness_fn);
 
             if let Some(lt) = lock_time {
                 test = test.lock_time(musk::elements::LockTime::from_consensus(lt));

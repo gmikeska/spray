@@ -12,31 +12,36 @@ pub struct TestRunner {
 
 impl TestRunner {
     /// Create a new test runner
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test environment fails to initialize.
     pub fn new() -> Result<Self, SprayError> {
         let env = TestEnv::new()?;
         Ok(Self { env })
     }
 
     /// Get a reference to the test environment
-    pub fn env(&self) -> &TestEnv {
+    #[must_use]
+    pub const fn env(&self) -> &TestEnv {
         &self.env
     }
 
     /// Run a single test case
-    pub fn run_test(&self, mut test: TestCase) -> TestResult {
+    pub fn run_test(&self, mut test: TestCase<'_>) -> TestResult {
         let test_name = test.name.clone();
         println!("{} {}", "⏳".yellow(), test_name.bold());
 
         // Create UTXO
         if let Err(e) = test.create_utxo() {
-            let error = format!("Failed to create UTXO: {}", e);
+            let error = format!("Failed to create UTXO: {e}");
             println!("{} {}: {}", "❌".red(), test_name.bold(), error.red());
             return TestResult::Failure { error };
         }
 
         // Generate blocks to confirm the funding transaction
         if let Err(e) = self.env.generate(1) {
-            let error = format!("Failed to generate blocks: {}", e);
+            let error = format!("Failed to generate blocks: {e}");
             println!("{} {}: {}", "❌".red(), test_name.bold(), error.red());
             return TestResult::Failure { error };
         }
@@ -44,7 +49,7 @@ impl TestRunner {
         // Run the test
         match test.run() {
             Ok(TestResult::Success { txid }) => {
-                println!("{} {} (txid: {})", "✅".green(), test_name.bold(), txid);
+                println!("{} {} (txid: {txid})", "✅".green(), test_name.bold());
                 TestResult::Success { txid }
             }
             Ok(TestResult::Failure { error }) => {
@@ -60,7 +65,7 @@ impl TestRunner {
     }
 
     /// Run multiple test cases
-    pub fn run_tests(&self, tests: Vec<TestCase>) -> Vec<TestResult> {
+    pub fn run_tests(&self, tests: Vec<TestCase<'_>>) -> Vec<TestResult> {
         let mut results = Vec::new();
 
         println!("\n{}", "Running tests...".bold().cyan());
@@ -95,6 +100,10 @@ impl TestRunner {
     }
 
     /// Generate blocks for lock time testing
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if block generation fails.
     pub fn generate_blocks(&self, count: u32) -> Result<(), SprayError> {
         self.env.generate(count)
     }
