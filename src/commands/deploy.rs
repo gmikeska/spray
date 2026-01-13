@@ -43,7 +43,11 @@ pub fn deploy_command(
             let contract = musk::Contract::from_source(&source)?;
 
             let arguments = if let Some(args_path) = args {
-                println!("{} {}", "Loading arguments from:".dimmed(), args_path.display());
+                println!(
+                    "{} {}",
+                    "Loading arguments from:".dimmed(),
+                    args_path.display()
+                );
                 file_loader::load_arguments(&args_path)?
             } else {
                 musk::Arguments::default()
@@ -54,7 +58,11 @@ pub fn deploy_command(
         }
         "json" => {
             // Load pre-compiled
-            println!("{} {}", "Loading pre-compiled contract:".dimmed(), file.display());
+            println!(
+                "{} {}",
+                "Loading pre-compiled contract:".dimmed(),
+                file.display()
+            );
             let json_str = std::fs::read_to_string(file)?;
             let output: CompiledOutput = serde_json::from_str(&json_str)?;
 
@@ -117,7 +125,7 @@ pub fn deploy_command(
     println!("  {} {txid}", "Txid:".bold());
     println!("  {} {vout}", "Vout:".bold());
     println!("  {} {amount_sats} sat", "Amount:".bold());
-    
+
     if let Some(asset_id) = asset {
         println!("  {} {asset_id}", "Asset:".bold());
     }
@@ -128,4 +136,3 @@ pub fn deploy_command(
 
     Ok(())
 }
-

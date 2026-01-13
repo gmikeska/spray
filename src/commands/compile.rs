@@ -49,7 +49,11 @@ pub fn compile_command(
 
     // Load arguments if provided
     let arguments = if let Some(args_path) = args {
-        println!("{} {}", "Loading arguments from:".dimmed(), args_path.display());
+        println!(
+            "{} {}",
+            "Loading arguments from:".dimmed(),
+            args_path.display()
+        );
         file_loader::load_arguments(&args_path)?
     } else {
         musk::Arguments::default()
@@ -68,7 +72,11 @@ pub fn compile_command(
 
     // Create output based on whether witness was provided
     let output = if let Some(witness_path) = witness {
-        println!("{} {}", "Loading witness from:".dimmed(), witness_path.display());
+        println!(
+            "{} {}",
+            "Loading witness from:".dimmed(),
+            witness_path.display()
+        );
         let witness_values = file_loader::load_witness(&witness_path)?;
         let satisfied = compiled.satisfy(witness_values)?;
         CompiledOutput::from_satisfied(&satisfied, &compiled, Some(source))
@@ -85,7 +93,7 @@ pub fn compile_command(
     println!("  {} {}", "CMR:".bold(), cmr_hex);
     println!("  {} {}", "Address:".bold(), address);
     println!("  {} {} bytes", "Size:".bold(), output.program_size);
-    
+
     if let Some(ref witness) = output.witness {
         use base64::{engine::general_purpose::STANDARD, Engine};
         if let Ok(witness_bytes) = STANDARD.decode(witness) {
@@ -112,13 +120,15 @@ pub fn compile_command(
         }
         OutputFormat::Hex => {
             use base64::{engine::general_purpose::STANDARD, Engine};
-            let program_bytes = STANDARD.decode(&output.program)
+            let program_bytes = STANDARD
+                .decode(&output.program)
                 .map_err(|e| SprayError::ParseError(format!("Failed to decode program: {e}")))?;
             println!("{}", "Program (hex):".bold());
             println!("{}", hex::encode(&program_bytes));
             if let Some(witness) = output.witness {
-                let witness_bytes = STANDARD.decode(&witness)
-                    .map_err(|e| SprayError::ParseError(format!("Failed to decode witness: {e}")))?;
+                let witness_bytes = STANDARD.decode(&witness).map_err(|e| {
+                    SprayError::ParseError(format!("Failed to decode witness: {e}"))
+                })?;
                 println!();
                 println!("{}", "Witness (hex):".bold());
                 println!("{}", hex::encode(&witness_bytes));
@@ -133,12 +143,13 @@ pub fn compile_command(
 #[doc(hidden)]
 mod hex {
     use std::fmt::Write;
-    
+
     pub fn encode(bytes: &[u8]) -> String {
-        bytes.iter().fold(String::with_capacity(bytes.len() * 2), |mut acc, b| {
-            let _ = write!(acc, "{b:02x}");
-            acc
-        })
+        bytes
+            .iter()
+            .fold(String::with_capacity(bytes.len() * 2), |mut acc, b| {
+                let _ = write!(acc, "{b:02x}");
+                acc
+            })
     }
 }
-

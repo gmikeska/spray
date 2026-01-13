@@ -7,4 +7,3 @@ pub mod redeem;
 pub use compile::compile_command;
 pub use deploy::deploy_command;
 pub use redeem::redeem_command;
-

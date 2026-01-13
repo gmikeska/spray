@@ -197,7 +197,15 @@ fn main() -> Result<(), SprayError> {
             network,
             config,
         } => {
-            commands::redeem_command(&utxo, &witness, compiled, dest, Some(fee), network.into(), config)?;
+            commands::redeem_command(
+                &utxo,
+                &witness,
+                compiled,
+                dest,
+                Some(fee),
+                network.into(),
+                config,
+            )?;
         }
 
         Commands::Test {
@@ -233,7 +241,11 @@ fn main() -> Result<(), SprayError> {
             // Load arguments if provided
             let arguments = if let Some(args_path) = args {
                 if verbose {
-                    println!("{} {}", "Loading arguments from:".dimmed(), args_path.display());
+                    println!(
+                        "{} {}",
+                        "Loading arguments from:".dimmed(),
+                        args_path.display()
+                    );
                 }
                 spray::file_loader::load_arguments(&args_path)?
             } else {

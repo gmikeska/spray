@@ -64,10 +64,9 @@ pub fn redeem_command(
         .get_transaction(&txid)
         .map_err(|e| SprayError::RpcError(e.to_string()))?;
 
-    let output = tx
-        .output
-        .get(vout as usize)
-        .ok_or_else(|| SprayError::InvalidUtxoRef(format!("Vout {vout} not found in transaction")))?;
+    let output = tx.output.get(vout as usize).ok_or_else(|| {
+        SprayError::InvalidUtxoRef(format!("Vout {vout} not found in transaction"))
+    })?;
 
     // Extract amount and asset
     let confidential::Value::Explicit(amount) = output.value else {
@@ -87,7 +86,11 @@ pub fn redeem_command(
     })?;
 
     println!();
-    println!("{} {}", "Loading contract from:".dimmed(), compiled_file.display());
+    println!(
+        "{} {}",
+        "Loading contract from:".dimmed(),
+        compiled_file.display()
+    );
     let json_str = std::fs::read_to_string(&compiled_file)?;
     let output_data: CompiledOutput = serde_json::from_str(&json_str)?;
 
@@ -99,7 +102,11 @@ pub fn redeem_command(
     let compiled = contract.instantiate(musk::Arguments::default())?;
 
     // Load witness
-    println!("{} {}", "Loading witness from:".dimmed(), witness_file.display());
+    println!(
+        "{} {}",
+        "Loading witness from:".dimmed(),
+        witness_file.display()
+    );
     let witness_values = file_loader::load_witness(witness_file)?;
 
     // Build UTXO struct
@@ -147,9 +154,7 @@ pub fn redeem_command(
     builder.add_fee(fee_amount, asset);
 
     // Compute sighash
-    let sighash = builder
-        .sighash_all()
-        .map_err(SprayError::SpendError)?;
+    let sighash = builder.sighash_all().map_err(SprayError::SpendError)?;
 
     println!("  {} {}", "Sighash:".dimmed(), hex::encode(&sighash));
 
@@ -170,7 +175,7 @@ pub fn redeem_command(
     println!();
     println!("{}", "Transaction details:".bold());
     println!("  {} {spend_txid}", "Txid:".bold());
-    
+
     println!();
     println!("{}", "Raw transaction (hex):".dimmed());
     println!("{}", serialize_hex(&tx));
@@ -182,12 +187,13 @@ pub fn redeem_command(
 #[doc(hidden)]
 mod hex {
     use std::fmt::Write;
-    
+
     pub fn encode(bytes: &[u8]) -> String {
-        bytes.iter().fold(String::with_capacity(bytes.len() * 2), |mut acc, b| {
-            let _ = write!(acc, "{b:02x}");
-            acc
-        })
+        bytes
+            .iter()
+            .fold(String::with_capacity(bytes.len() * 2), |mut acc, b| {
+                let _ = write!(acc, "{b:02x}");
+                acc
+            })
     }
 }
-

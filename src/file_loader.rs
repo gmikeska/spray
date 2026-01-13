@@ -68,4 +68,3 @@ mod tests {
         assert!(load_arguments(Path::new("test")).is_err()); // No extension
     }
 }
-

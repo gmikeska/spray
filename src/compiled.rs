@@ -27,18 +27,15 @@ pub struct CompiledOutput {
 impl CompiledOutput {
     /// Create a new compiled output from a musk `CompiledContract`
     #[must_use]
-    pub fn from_compiled(
-        compiled: &musk::CompiledContract,
-        source: Option<String>,
-    ) -> Self {
+    pub fn from_compiled(compiled: &musk::CompiledContract, source: Option<String>) -> Self {
         use base64::{engine::general_purpose::STANDARD, Engine};
-        
+
         let program_bytes = compiled.inner().commit().to_vec_without_witness();
         let cmr = compiled.cmr();
-        
+
         // Convert witness types to string map
         let witness_types = HashMap::new(); // TODO: Extract from compiled.inner().witness_types()
-        
+
         Self {
             cmr: hex::encode(cmr.as_ref()),
             program: STANDARD.encode(&program_bytes),
@@ -57,12 +54,12 @@ impl CompiledOutput {
         source: Option<String>,
     ) -> Self {
         use base64::{engine::general_purpose::STANDARD, Engine};
-        
+
         let (program_bytes, witness_bytes) = satisfied.encode();
         let cmr = compiled.cmr();
-        
+
         let witness_types = HashMap::new(); // TODO: Extract from witness_types
-        
+
         Self {
             cmr: hex::encode(cmr.as_ref()),
             program: STANDARD.encode(&program_bytes),
@@ -90,7 +87,7 @@ impl CompiledOutput {
     /// Returns an error if the base64 is invalid or witness is not present.
     pub fn decode_witness(&self) -> Result<Vec<u8>, base64::DecodeError> {
         use base64::{engine::general_purpose::STANDARD, Engine};
-        
+
         self.witness
             .as_ref()
             .map_or_else(|| Ok(Vec::new()), |w| STANDARD.decode(w))
@@ -101,12 +98,13 @@ impl CompiledOutput {
 #[doc(hidden)]
 mod hex {
     use std::fmt::Write;
-    
+
     pub fn encode(bytes: &[u8]) -> String {
-        bytes.iter().fold(String::with_capacity(bytes.len() * 2), |mut acc, b| {
-            let _ = write!(acc, "{b:02x}");
-            acc
-        })
+        bytes
+            .iter()
+            .fold(String::with_capacity(bytes.len() * 2), |mut acc, b| {
+                let _ = write!(acc, "{b:02x}");
+                acc
+            })
     }
 }
-
