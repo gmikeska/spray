@@ -158,6 +158,7 @@ enum Commands {
     Daemon,
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() -> Result<(), SprayError> {
     let cli = Cli::parse();
 
