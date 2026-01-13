@@ -23,14 +23,21 @@
 //! ```
 
 pub mod client;
+pub mod compiled;
 pub mod env;
 pub mod error;
+pub mod file_loader;
+pub mod network;
 pub mod runner;
 pub mod test;
 
+pub mod commands;
+
 // Re-export main types
+pub use compiled::CompiledOutput;
 pub use env::TestEnv;
 pub use error::SprayError;
+pub use network::{create_backend, NetworkBackend};
 pub use runner::TestRunner;
 pub use test::{TestCase, TestResult};
 

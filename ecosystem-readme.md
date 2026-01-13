@@ -35,17 +35,31 @@ let address = compiled.address(&elements::AddressParams::ELEMENTS);
 
 ### 3. [Spray](.)
 
-Testing workbench for Simplicity contracts using local regtest/testnet networks.
+Testing workbench and CLI for Simplicity contracts on Elements/Liquid networks.
 
 **Key Features:**
-- Automated Elements regtest daemon management
-- Test framework using musk APIs
-- CLI for quick contract testing
-- Support for time-locked contracts
+- Complete CLI with compile, deploy, redeem, and test commands
+- Automated Elements regtest daemon management for testing
+- Support for external nodes (testnet, liquid mainnet)
+- Multiple file format support (JSON, TOML)
+- Network-agnostic architecture using musk
 
 **Usage:**
 ```bash
+# Compile a contract
+spray compile contract.simf
+
+# Deploy to regtest
+spray deploy contract.simf --amount 100000000
+
+# Redeem from a UTXO
+spray redeem txid:vout witness.json --compiled compiled.json
+
+# Full end-to-end test
 spray test --file contract.simf --name "My test"
+
+# Deploy to testnet
+spray deploy contract.simf --network testnet --config musk.toml
 ```
 
 ## Architecture
@@ -141,16 +155,28 @@ let address = compiled.address(&musk::elements::AddressParams::ELEMENTS);
 # 1. Write contract
 vim my_contract.simf
 
-# 2. Test locally
+# 2. Compile and inspect
+spray compile my_contract.simf
+
+# 3. Test locally (end-to-end)
 spray test --file my_contract.simf --name "Test 1"
 
-# 3. Test with witnesses
+# 4. Test with witnesses
 spray test --file my_contract.simf --witness test.wit --name "Test 2"
 
-# 4. Test with lock time
+# 5. Test with lock time
 spray test --file my_contract.simf --lock-time 1000 --name "Test 3"
 
-# 5. Integrate into application using musk
+# 6. Manual testing workflow
+spray compile my_contract.simf > compiled.json
+spray deploy my_contract.simf --amount 50000000  # Returns txid:vout
+# ... create witness based on sighash ...
+spray redeem <txid:vout> witness.json --compiled compiled.json
+
+# 7. Deploy to testnet (with config)
+spray deploy my_contract.simf --network testnet --config musk.toml
+
+# 8. Integrate into application using musk
 ```
 
 ### Production Deployment
@@ -203,17 +229,39 @@ See [spray/examples/](./examples/) for testing examples.
 ## Data Flow
 
 ### Testing Flow (Spray)
+
 ```
-spray test → TestRunner → TestEnv (Elements daemon)
-                ↓
-         TestCase → musk::Contract
-                         ↓
-                  musk::SpendBuilder
-                         ↓
-                    Transaction → Broadcast
+┌─────────────────────────────────────────────────────────┐
+│                    Spray CLI                            │
+│  compile │ deploy │ redeem │ test                       │
+└──────────┬──────────────────────────────────────────────┘
+           │
+           ↓
+    ┌─────────────┐
+    │ NetworkBackend │
+    ├──────┬──────────┤
+    │ Ephemeral     │  External
+    │ (regtest)     │  (testnet/liquid)
+    └──────┬──────────┘
+           │
+           ↓
+    ┌─────────────┐
+    │musk::Contract│
+    └──────┬──────┘
+           │
+           ↓
+    ┌─────────────────┐
+    │musk::SpendBuilder│
+    └──────┬──────────┘
+           │
+           ↓
+    ┌─────────────┐
+    │ Transaction │ → Broadcast
+    └─────────────┘
 ```
 
 ### Production Flow (Musk)
+
 ```
 Your App → musk::Contract → Compile
                 ↓

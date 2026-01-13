@@ -1,8 +1,8 @@
 //! Spray CLI - Testing workbench for Simplicity contracts
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use colored::Colorize;
-use spray::{musk, SprayError, TestCase, TestRunner};
+use spray::{commands, musk, SprayError, TestCase, TestRunner};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -13,19 +13,120 @@ struct Cli {
     command: Commands,
 }
 
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum NetworkArg {
+    Regtest,
+    Testnet,
+    Liquid,
+}
+
+impl From<NetworkArg> for musk::Network {
+    fn from(arg: NetworkArg) -> Self {
+        match arg {
+            NetworkArg::Regtest => Self::Regtest,
+            NetworkArg::Testnet => Self::Testnet,
+            NetworkArg::Liquid => Self::Liquid,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum OutputFormat {
+    Json,
+    Base64,
+    Hex,
+}
+
 #[derive(Subcommand)]
 enum Commands {
-    /// Test a Simplicity contract
+    /// Compile a Simplicity contract
+    Compile {
+        /// Path to the .simf contract file
+        file: PathBuf,
+
+        /// Path to arguments file (JSON or TOML)
+        #[arg(short, long)]
+        args: Option<PathBuf>,
+
+        /// Path to witness file (JSON or TOML)
+        #[arg(short, long)]
+        witness: Option<PathBuf>,
+
+        /// Output format
+        #[arg(short, long, value_enum, default_value = "json")]
+        output: OutputFormat,
+
+        /// Network (for address generation)
+        #[arg(short, long, value_enum, default_value = "regtest")]
+        network: NetworkArg,
+    },
+
+    /// Deploy a contract to the network
+    Deploy {
+        /// Path to .simf source file or compiled .json file
+        file: PathBuf,
+
+        /// Path to arguments file (JSON or TOML, for .simf files only)
+        #[arg(short, long)]
+        args: Option<PathBuf>,
+
+        /// Amount to fund (in satoshis)
+        #[arg(long, default_value = "100000000")]
+        amount: u64,
+
+        /// Asset ID (hex)
+        #[arg(long)]
+        asset: Option<String>,
+
+        /// Network
+        #[arg(short, long, value_enum, default_value = "regtest")]
+        network: NetworkArg,
+
+        /// Config file (required for testnet/liquid)
+        #[arg(short, long)]
+        config: Option<PathBuf>,
+    },
+
+    /// Redeem from a contract UTXO
+    Redeem {
+        /// UTXO reference in format "txid:vout"
+        utxo: String,
+
+        /// Path to witness file (JSON or TOML)
+        witness: PathBuf,
+
+        /// Path to compiled contract file (.json with source)
+        #[arg(short, long)]
+        compiled: Option<PathBuf>,
+
+        /// Destination address (defaults to new address from wallet)
+        #[arg(short, long)]
+        dest: Option<String>,
+
+        /// Fee in satoshis
+        #[arg(short, long, default_value = "3000")]
+        fee: u64,
+
+        /// Network
+        #[arg(short, long, value_enum, default_value = "regtest")]
+        network: NetworkArg,
+
+        /// Config file (required for testnet/liquid)
+        #[arg(short, long)]
+        config: Option<PathBuf>,
+    },
+
+    /// Test a Simplicity contract (compile + deploy + redeem)
     Test {
         /// Path to the .simf contract file
         #[arg(short, long)]
         file: PathBuf,
 
-        /// Path to arguments JSON file
+        /// Path to arguments file (JSON or TOML)
         #[arg(short, long)]
         args: Option<PathBuf>,
 
-        /// Path to witness JSON file
+        /// Path to witness file (JSON or TOML)
         #[arg(short, long)]
         witness: Option<PathBuf>,
 
@@ -40,6 +141,10 @@ enum Commands {
         /// Sequence number for the spending transaction
         #[arg(long)]
         sequence: Option<u32>,
+
+        /// Network (currently only regtest is supported for test command)
+        #[arg(long, value_enum, default_value = "regtest")]
+        network: NetworkArg,
 
         /// Verbose output
         #[arg(short, long)]
@@ -57,6 +162,44 @@ fn main() -> Result<(), SprayError> {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::Compile {
+            file,
+            args,
+            witness,
+            output,
+            network,
+        } => {
+            let output_fmt = match output {
+                OutputFormat::Json => commands::compile::OutputFormat::Json,
+                OutputFormat::Base64 => commands::compile::OutputFormat::Base64,
+                OutputFormat::Hex => commands::compile::OutputFormat::Hex,
+            };
+            commands::compile_command(&file, args, witness, output_fmt, network.into())?;
+        }
+
+        Commands::Deploy {
+            file,
+            args,
+            amount,
+            asset,
+            network,
+            config,
+        } => {
+            commands::deploy_command(&file, args, Some(amount), asset, network.into(), config)?;
+        }
+
+        Commands::Redeem {
+            utxo,
+            witness,
+            compiled,
+            dest,
+            fee,
+            network,
+            config,
+        } => {
+            commands::redeem_command(&utxo, &witness, compiled, dest, Some(fee), network.into(), config)?;
+        }
+
         Commands::Test {
             file,
             args,
@@ -64,8 +207,16 @@ fn main() -> Result<(), SprayError> {
             name,
             lock_time,
             sequence,
+            network,
             verbose,
         } => {
+            // Only regtest is supported for test command
+            if !matches!(network, NetworkArg::Regtest) {
+                return Err(SprayError::ConfigError(
+                    "Test command currently only supports --network regtest".into(),
+                ));
+            }
+
             if verbose {
                 println!("{}", "Initializing test environment...".dimmed());
             }
@@ -84,8 +235,7 @@ fn main() -> Result<(), SprayError> {
                 if verbose {
                     println!("{} {}", "Loading arguments from:".dimmed(), args_path.display());
                 }
-                let args_json = std::fs::read_to_string(args_path)?;
-                serde_json::from_str(&args_json)?
+                spray::file_loader::load_arguments(&args_path)?
             } else {
                 musk::Arguments::default()
             };
@@ -97,8 +247,7 @@ fn main() -> Result<(), SprayError> {
             let witness_fn: Box<dyn Fn([u8; 32]) -> musk::WitnessValues> =
                 if let Some(witness_path) = witness {
                     // Load witness from file
-                    let witness_json = std::fs::read_to_string(witness_path)?;
-                    let witness_values: musk::WitnessValues = serde_json::from_str(&witness_json)?;
+                    let witness_values = spray::file_loader::load_witness(&witness_path)?;
                     Box::new(move |_sighash| witness_values.clone())
                 } else {
                     // Empty witness

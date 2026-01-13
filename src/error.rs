@@ -28,4 +28,16 @@ pub enum SprayError {
 
     #[error("RPC error: {0}")]
     RpcError(String),
+
+    #[error("Configuration error: {0}")]
+    ConfigError(String),
+
+    #[error("Parse error: {0}")]
+    ParseError(String),
+
+    #[error("File format error: {0}")]
+    FileFormatError(String),
+
+    #[error("Invalid UTXO reference: {0}")]
+    InvalidUtxoRef(String),
 }
