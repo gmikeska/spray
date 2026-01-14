@@ -29,15 +29,15 @@ impl NodeClient for ElementsClient<'_> {
             .daemon
             .client()
             .call::<serde_json::Value>("sendtoaddress", &[addr_str.into(), amount_btc.into()])
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))?
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))?
             .as_str()
             .ok_or_else(|| {
-                musk::ContractError::IoError(std::io::Error::other("Invalid txid response"))
+                musk::ProgramError::IoError(std::io::Error::other("Invalid txid response"))
             })?
             .to_string();
 
         Txid::from_str(&txid_str)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))
     }
 
     fn get_transaction(&self, txid: &Txid) -> ClientResult<Transaction> {
@@ -45,19 +45,19 @@ impl NodeClient for ElementsClient<'_> {
             .daemon
             .client()
             .call::<serde_json::Value>("gettransaction", &[txid.to_string().into()])
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))?
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))?
             .get("hex")
             .and_then(|v| v.as_str())
             .ok_or_else(|| {
-                musk::ContractError::IoError(std::io::Error::other("Invalid transaction hex"))
+                musk::ProgramError::IoError(std::io::Error::other("Invalid transaction hex"))
             })?
             .to_string();
 
         let tx_bytes = Vec::<u8>::from_hex(&tx_hex)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))?;
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))?;
 
         deserialize(&tx_bytes)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))
     }
 
     fn broadcast(&self, tx: &Transaction) -> ClientResult<Txid> {
@@ -67,15 +67,15 @@ impl NodeClient for ElementsClient<'_> {
             .daemon
             .client()
             .call::<serde_json::Value>("sendrawtransaction", &[serialize_hex(tx).into()])
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))?
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))?
             .as_str()
             .ok_or_else(|| {
-                musk::ContractError::IoError(std::io::Error::other("Invalid txid response"))
+                musk::ProgramError::IoError(std::io::Error::other("Invalid txid response"))
             })?
             .to_string();
 
         Txid::from_str(&txid_str)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))
     }
 
     fn generate_blocks(&self, count: u32) -> ClientResult<Vec<BlockHash>> {
@@ -84,10 +84,10 @@ impl NodeClient for ElementsClient<'_> {
             .daemon
             .client()
             .call::<serde_json::Value>("getnewaddress", &[])
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))?
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))?
             .as_str()
             .ok_or_else(|| {
-                musk::ContractError::IoError(std::io::Error::other("Invalid address response"))
+                musk::ProgramError::IoError(std::io::Error::other("Invalid address response"))
             })?
             .to_string();
 
@@ -95,18 +95,18 @@ impl NodeClient for ElementsClient<'_> {
             .daemon
             .client()
             .call::<serde_json::Value>("generatetoaddress", &[count.into(), address_str.into()])
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))?;
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))?;
 
         let hashes = result
             .as_array()
             .ok_or_else(|| {
-                musk::ContractError::IoError(std::io::Error::other("Invalid block hash array"))
+                musk::ProgramError::IoError(std::io::Error::other("Invalid block hash array"))
             })?
             .iter()
             .filter_map(|v| v.as_str())
             .map(BlockHash::from_str)
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))?;
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))?;
 
         Ok(hashes)
     }
@@ -123,14 +123,14 @@ impl NodeClient for ElementsClient<'_> {
             .daemon
             .client()
             .call::<serde_json::Value>("getnewaddress", &[])
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))?
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))?
             .as_str()
             .ok_or_else(|| {
-                musk::ContractError::IoError(std::io::Error::other("Invalid address response"))
+                musk::ProgramError::IoError(std::io::Error::other("Invalid address response"))
             })?
             .to_string();
 
         Address::from_str(&addr_str)
-            .map_err(|e| musk::ContractError::IoError(std::io::Error::other(e.to_string())))
+            .map_err(|e| musk::ProgramError::IoError(std::io::Error::other(e.to_string())))
     }
 }

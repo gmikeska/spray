@@ -9,7 +9,7 @@ use crate::error::SprayError;
 use colored::Colorize;
 use musk::client::{NodeClient, Utxo};
 use musk::elements::{confidential, LockTime, Sequence};
-use musk::{CompiledContract, SpendBuilder, WitnessValues};
+use musk::{InstantiatedProgram, SpendBuilder, WitnessValues};
 
 /// Result of a test execution
 ///
@@ -77,11 +77,11 @@ impl TestResult {
     }
 }
 
-/// A test case for a Simplicity contract
+/// A test case for a Simplicity program
 pub struct TestCase<'env> {
     pub name: String,
     env: &'env TestEnv,
-    contract: CompiledContract,
+    program: InstantiatedProgram,
     witness_fn: Box<dyn Fn([u8; 32]) -> WitnessValues + 'env>,
     lock_time: LockTime,
     sequence: Sequence,
@@ -90,11 +90,11 @@ pub struct TestCase<'env> {
 
 impl<'env> TestCase<'env> {
     /// Create a new test case
-    pub fn new(env: &'env TestEnv, contract: CompiledContract) -> Self {
+    pub fn new(env: &'env TestEnv, program: InstantiatedProgram) -> Self {
         Self {
             name: "Unnamed test".to_string(),
             env,
-            contract,
+            program,
             witness_fn: Box::new(|_| WitnessValues::default()),
             lock_time: LockTime::ZERO,
             sequence: Sequence::MAX,
@@ -133,20 +133,20 @@ impl<'env> TestCase<'env> {
         self
     }
 
-    /// Create a UTXO for this test by funding the contract address
+    /// Create a UTXO for this test by funding the program address
     ///
     /// # Errors
     ///
-    /// Returns an error if sending to the contract address fails.
+    /// Returns an error if sending to the program address fails.
     pub fn create_utxo(&mut self) -> Result<(), SprayError> {
         let client = ElementsClient::new(self.env.daemon());
         let address = self
-            .contract
+            .program
             .address(&musk::elements::AddressParams::ELEMENTS);
 
         println!("  {} {address}", "Creating UTXO at:".dimmed());
 
-        // Send 1 BTC to the contract address
+        // Send 1 BTC to the program address
         let amount = 100_000_000; // 1 BTC in satoshis
         let txid = client
             .send_to_address(&address, amount)
@@ -170,7 +170,7 @@ impl<'env> TestCase<'env> {
             .map_err(|e| SprayError::TestError(e.to_string()))?;
 
         let address = self
-            .contract
+            .program
             .address(&musk::elements::AddressParams::ELEMENTS);
         let script = address.script_pubkey();
 
@@ -215,7 +215,7 @@ impl<'env> TestCase<'env> {
         };
 
         // Build the spending transaction
-        let mut builder = SpendBuilder::new(self.contract.clone(), utxo)
+        let mut builder = SpendBuilder::new(self.program.clone(), utxo)
             .genesis_hash(self.env.genesis_hash())
             .lock_time(self.lock_time)
             .sequence(self.sequence);

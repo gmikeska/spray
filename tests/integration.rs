@@ -3,7 +3,7 @@
 //! These tests require a running elementsd daemon and are marked as `#[ignore]`
 //! by default. Run with `cargo test -- --ignored` to execute them.
 
-use musk::{Arguments, Contract, WitnessValues};
+use musk::{Arguments, Program, WitnessValues};
 use spray::{TestCase, TestEnv, TestRunner};
 
 /// Test that TestEnv successfully creates and configures a wallet
@@ -39,9 +39,9 @@ fn test_env_generates_blocks() {
 fn test_testcase_builder_pattern() {
     let runner = TestRunner::new().expect("Failed to create test runner");
 
-    let contract =
-        Contract::from_source("fn main() { assert!(true); }").expect("Failed to parse contract");
-    let compiled = contract
+    let program =
+        Program::from_source("fn main() { assert!(true); }").expect("Failed to parse program");
+    let compiled = program
         .instantiate(Arguments::default())
         .expect("Failed to compile");
 
@@ -61,10 +61,10 @@ fn test_testcase_builder_pattern() {
 fn test_compile_workflow_no_daemon() {
     use spray::compiled::CompiledOutput;
 
-    // Compile a contract
-    let contract =
-        Contract::from_source("fn main() { assert!(true); }").expect("Failed to parse contract");
-    let compiled = contract
+    // Compile a program
+    let program =
+        Program::from_source("fn main() { assert!(true); }").expect("Failed to parse program");
+    let compiled = program
         .instantiate(Arguments::default())
         .expect("Failed to compile");
 
@@ -83,24 +83,24 @@ fn test_compile_workflow_no_daemon() {
     assert!(parsed.source.is_some());
 }
 
-/// Test TestRunner can run a simple contract
+/// Test TestRunner can run a simple program
 #[test]
 #[ignore = "Requires elementsd daemon"]
-fn test_runner_executes_simple_contract() {
+fn test_runner_executes_simple_program() {
     let runner = TestRunner::new().expect("Failed to create test runner");
 
-    let contract =
-        Contract::from_source("fn main() { assert!(true); }").expect("Failed to parse contract");
-    let compiled = contract
+    let program =
+        Program::from_source("fn main() { assert!(true); }").expect("Failed to parse program");
+    let compiled = program
         .instantiate(Arguments::default())
         .expect("Failed to compile");
 
     let test = TestCase::new(runner.env(), compiled)
-        .name("Simple contract test")
+        .name("Simple program test")
         .witness(|_| WitnessValues::default());
 
     let result = runner.run_test(test);
-    assert!(result.is_success(), "Simple contract should succeed");
+    assert!(result.is_success(), "Simple program should succeed");
 }
 
 /// Test network backend creation for regtest

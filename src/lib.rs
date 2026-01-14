@@ -1,6 +1,6 @@
-//! Spray - Testing workbench for Simplicity contracts
+//! Spray - Testing workbench for Simplicity programs
 //!
-//! This crate provides tools for testing Simplicity contracts locally
+//! This crate provides tools for testing Simplicity programs locally
 //! on a regtest or testnet Liquid network node.
 //!
 //! # Example
@@ -9,8 +9,8 @@
 //! use spray::{TestEnv, TestCase};
 //!
 //! let env = TestEnv::new()?;
-//! let contract = musk::Contract::from_file("my_contract.simf")?;
-//! let compiled = contract.instantiate(musk::Arguments::default())?;
+//! let program = musk::Program::from_file("my_program.simf")?;
+//! let compiled = program.instantiate(musk::Arguments::default())?;
 //!
 //! let test = TestCase::new(&env, compiled)
 //!     .name("My test")

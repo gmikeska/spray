@@ -1,32 +1,32 @@
-//! Example: Testing Simplicity contracts with spray
+//! Example: Testing Simplicity programs with spray
 //!
 //! Run with: cargo run --example basic_tests
 //!
 //! Note: This example requires a running elementsd daemon.
 
-use musk::{Arguments, Contract, WitnessValues};
+use musk::{Arguments, Program, WitnessValues};
 use spray::{TestCase, TestRunner};
 
 fn main() {
     println!("Running spray examples...\n");
 
-    test_cat_contract();
-    test_p2pk_contract();
-    test_multiple_contracts();
+    test_cat_program();
+    test_p2pk_program();
+    test_multiple_programs();
 
     println!("\nAll examples completed!");
 }
 
-fn test_cat_contract() {
+fn test_cat_program() {
     let runner = TestRunner::new().expect("Failed to create test runner");
 
     // Load the OP_CAT example from SimplicityHL
-    let contract =
-        Contract::from_file("../SimplicityHL/examples/cat.simf").expect("Failed to load contract");
+    let program =
+        Program::from_file("../SimplicityHL/examples/cat.simf").expect("Failed to load program");
 
-    let compiled = contract
+    let compiled = program
         .instantiate(Arguments::default())
-        .expect("Failed to compile contract");
+        .expect("Failed to compile program");
 
     let test = TestCase::new(runner.env(), compiled)
         .name("OP_CAT test")
@@ -36,16 +36,16 @@ fn test_cat_contract() {
     assert!(result.is_success(), "OP_CAT test should succeed");
 }
 
-fn test_p2pk_contract() {
+fn test_p2pk_program() {
     use musk::util;
     use musk::{Value, ValueConstructible, WitnessName};
     use std::collections::HashMap;
 
     let runner = TestRunner::new().expect("Failed to create test runner");
 
-    // Load P2PK contract
-    let contract =
-        Contract::from_file("../SimplicityHL/examples/p2pk.simf").expect("Failed to load contract");
+    // Load P2PK program
+    let program =
+        Program::from_file("../SimplicityHL/examples/p2pk.simf").expect("Failed to load program");
 
     // Create arguments with public key
     let secret_key = 1u32;
@@ -56,9 +56,9 @@ fn test_p2pk_contract() {
         Value::u256(musk::simplicityhl::num::U256::from_byte_array(pubkey)),
     );
 
-    let compiled = contract
+    let compiled = program
         .instantiate(Arguments::from(args))
-        .expect("Failed to compile contract");
+        .expect("Failed to compile program");
 
     let test = TestCase::new(runner.env(), compiled)
         .name("Pay to public key")
@@ -76,16 +76,16 @@ fn test_p2pk_contract() {
     assert!(result.is_success(), "P2PK test should succeed");
 }
 
-fn test_multiple_contracts() {
+fn test_multiple_programs() {
     let runner = TestRunner::new().expect("Failed to create test runner");
 
-    // Test multiple contracts
+    // Test multiple programs
     let mut tests = vec![];
 
     // Test 1: CAT
-    let cat_contract = Contract::from_file("../SimplicityHL/examples/cat.simf")
-        .expect("Failed to load cat contract");
-    let cat_compiled = cat_contract
+    let cat_program = Program::from_file("../SimplicityHL/examples/cat.simf")
+        .expect("Failed to load cat program");
+    let cat_compiled = cat_program
         .instantiate(Arguments::default())
         .expect("Failed to compile cat");
     tests.push(
@@ -95,9 +95,9 @@ fn test_multiple_contracts() {
     );
 
     // Test 2: CTV
-    let ctv_contract = Contract::from_file("../SimplicityHL/examples/ctv.simf")
-        .expect("Failed to load ctv contract");
-    let ctv_compiled = ctv_contract
+    let ctv_program = Program::from_file("../SimplicityHL/examples/ctv.simf")
+        .expect("Failed to load ctv program");
+    let ctv_compiled = ctv_program
         .instantiate(Arguments::default())
         .expect("Failed to compile ctv");
     tests.push(

@@ -23,7 +23,7 @@ use thiserror::Error;
 /// Errors that can occur during spray operations
 ///
 /// Each variant represents a different category of error that can occur
-/// when using spray for contract testing.
+/// when using spray for program testing.
 #[derive(Debug, Error)]
 pub enum SprayError {
     #[error("Failed to setup test environment: {0}")]
@@ -35,8 +35,8 @@ pub enum SprayError {
     #[error("Test execution failed: {0}")]
     TestError(String),
 
-    #[error("Contract error: {0}")]
-    ContractError(#[from] musk::ContractError),
+    #[error("Program error: {0}")]
+    ProgramError(#[from] musk::ProgramError),
 
     #[error("Spend error: {0}")]
     SpendError(#[from] musk::SpendError),

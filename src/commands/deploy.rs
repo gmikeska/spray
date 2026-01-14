@@ -22,7 +22,7 @@ pub fn deploy_command(
     network: Network,
     config: Option<PathBuf>,
 ) -> Result<(), SprayError> {
-    println!("{}", "Deploying Simplicity contract...".cyan().bold());
+    println!("{}", "Deploying Simplicity program...".cyan().bold());
     println!();
 
     // Create network backend
@@ -40,7 +40,7 @@ pub fn deploy_command(
             // Compile from source
             println!("{} {}", "Compiling from source:".dimmed(), file.display());
             let source = std::fs::read_to_string(file)?;
-            let contract = musk::Contract::from_source(&source)?;
+            let program = musk::Program::from_source(&source)?;
 
             let arguments = if let Some(args_path) = args {
                 println!(
@@ -54,13 +54,13 @@ pub fn deploy_command(
             };
 
             println!("{}", "Compiling...".dimmed());
-            contract.instantiate(arguments)?
+            program.instantiate(arguments)?
         }
         "json" => {
             // Load pre-compiled
             println!(
                 "{} {}",
-                "Loading pre-compiled contract:".dimmed(),
+                "Loading pre-compiled program:".dimmed(),
                 file.display()
             );
             let json_str = std::fs::read_to_string(file)?;
@@ -68,13 +68,13 @@ pub fn deploy_command(
 
             // For now, we need to recompile from source if it's available
             if let Some(source) = output.source {
-                let contract = musk::Contract::from_source(&source)?;
+                let program = musk::Program::from_source(&source)?;
                 let arguments = if let Some(args_path) = args {
                     file_loader::load_arguments(&args_path)?
                 } else {
                     musk::Arguments::default()
                 };
-                contract.instantiate(arguments)?
+                program.instantiate(arguments)?
             } else {
                 return Err(SprayError::FileFormatError(
                     "Pre-compiled JSON must include source field for deployment".into(),
@@ -88,10 +88,10 @@ pub fn deploy_command(
         }
     };
 
-    // Get contract address
+    // Get program address
     let address = compiled.address(backend.address_params());
     println!();
-    println!("{}", "Contract address:".bold());
+    println!("{}", "Program address:".bold());
     println!("  {address}");
     println!();
 
@@ -99,7 +99,7 @@ pub fn deploy_command(
     let amount_sats = amount.unwrap_or(100_000_000);
     println!("{} {} sat", "Sending amount:".dimmed(), amount_sats);
 
-    // Send funds to contract address
+    // Send funds to program address
     println!("{}", "Creating funding transaction...".dimmed());
     let txid = backend
         .send_to_address(&address, amount_sats)

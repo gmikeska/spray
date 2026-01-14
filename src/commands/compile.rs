@@ -6,7 +6,7 @@ use crate::file_loader;
 use colored::Colorize;
 use std::path::{Path, PathBuf};
 
-/// Output format for compiled contracts
+/// Output format for compiled programs
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OutputFormat {
     Json,
@@ -39,13 +39,13 @@ pub fn compile_command(
     output_format: OutputFormat,
     network: musk::Network,
 ) -> Result<(), SprayError> {
-    println!("{}", "Compiling Simplicity contract...".cyan().bold());
+    println!("{}", "Compiling Simplicity program...".cyan().bold());
     println!();
 
-    // Load contract
-    println!("{} {}", "Loading contract from:".dimmed(), file.display());
+    // Load program
+    println!("{} {}", "Loading program from:".dimmed(), file.display());
     let source = std::fs::read_to_string(file)?;
-    let contract = musk::Contract::from_source(&source)?;
+    let program = musk::Program::from_source(&source)?;
 
     // Load arguments if provided
     let arguments = if let Some(args_path) = args {
@@ -59,9 +59,9 @@ pub fn compile_command(
         musk::Arguments::default()
     };
 
-    // Compile contract
+    // Compile program
     println!("{}", "Compiling...".dimmed());
-    let compiled = contract.instantiate(arguments)?;
+    let compiled = program.instantiate(arguments)?;
 
     // Get CMR
     let cmr = compiled.cmr();
@@ -89,7 +89,7 @@ pub fn compile_command(
     println!();
 
     // Display basic info
-    println!("{}", "Contract Information:".bold());
+    println!("{}", "Program Information:".bold());
     println!("  {} {}", "CMR:".bold(), cmr_hex);
     println!("  {} {}", "Address:".bold(), address);
     println!("  {} {} bytes", "Size:".bold(), output.program_size);

@@ -1,4 +1,4 @@
-//! Spray CLI - Testing workbench for Simplicity contracts
+//! Spray CLI - Testing workbench for Simplicity programs
 
 use clap::{Parser, Subcommand, ValueEnum};
 use colored::Colorize;
@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(name = "spray")]
-#[command(about = "Testing workbench for Simplicity contracts", long_about = None)]
+#[command(about = "Testing workbench for Simplicity programs", long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -39,9 +39,9 @@ enum OutputFormat {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Compile a Simplicity contract
+    /// Compile a Simplicity program
     Compile {
-        /// Path to the .simf contract file
+        /// Path to the .simf program file
         file: PathBuf,
 
         /// Path to arguments file (JSON or TOML)
@@ -61,7 +61,7 @@ enum Commands {
         network: NetworkArg,
     },
 
-    /// Deploy a contract to the network
+    /// Deploy a program to the network
     Deploy {
         /// Path to .simf source file or compiled .json file
         file: PathBuf,
@@ -87,7 +87,7 @@ enum Commands {
         config: Option<PathBuf>,
     },
 
-    /// Redeem from a contract UTXO
+    /// Redeem from a program UTXO
     Redeem {
         /// UTXO reference in format "txid:vout"
         utxo: String,
@@ -95,7 +95,7 @@ enum Commands {
         /// Path to witness file (JSON or TOML)
         witness: PathBuf,
 
-        /// Path to compiled contract file (.json with source)
+        /// Path to compiled program file (.json with source)
         #[arg(short, long)]
         compiled: Option<PathBuf>,
 
@@ -116,9 +116,9 @@ enum Commands {
         config: Option<PathBuf>,
     },
 
-    /// Test a Simplicity contract (compile + deploy + redeem)
+    /// Test a Simplicity program (compile + deploy + redeem)
     Test {
-        /// Path to the .simf contract file
+        /// Path to the .simf program file
         #[arg(short, long)]
         file: PathBuf,
 
@@ -131,7 +131,7 @@ enum Commands {
         witness: Option<PathBuf>,
 
         /// Test name
-        #[arg(short, long, default_value = "Contract test")]
+        #[arg(short, long, default_value = "Program test")]
         name: String,
 
         /// Lock time for the spending transaction
@@ -233,11 +233,11 @@ fn main() -> Result<(), SprayError> {
             let runner = TestRunner::new()?;
 
             if verbose {
-                println!("{}", "Loading contract...".dimmed());
+                println!("{}", "Loading program...".dimmed());
             }
 
-            // Load contract
-            let contract = musk::Contract::from_file(&file)?;
+            // Load program
+            let program = musk::Program::from_file(&file)?;
 
             // Load arguments if provided
             let arguments = if let Some(args_path) = args {
@@ -253,8 +253,8 @@ fn main() -> Result<(), SprayError> {
                 musk::Arguments::default()
             };
 
-            // Compile contract
-            let compiled = contract.instantiate(arguments)?;
+            // Compile program
+            let compiled = program.instantiate(arguments)?;
 
             // Create witness function
             let witness_fn: Box<dyn Fn([u8; 32]) -> musk::WitnessValues> =

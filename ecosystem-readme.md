@@ -1,6 +1,6 @@
-# Simplicity Contract Ecosystem
+# Simplicity Program Ecosystem
 
-This workspace contains tools for developing, testing, and deploying Simplicity contracts on Elements/Liquid networks.
+This workspace contains tools for developing, testing, and deploying Simplicity programs on Elements/Liquid networks.
 
 ## Projects
 
@@ -9,33 +9,33 @@ This workspace contains tools for developing, testing, and deploying Simplicity 
 The Simplicity high-level language compiler. Compiles `.simf` source files to Simplicity bytecode.
 
 **Key Features:**
-- Rust-like syntax for Simplicity contracts
+- Rust-like syntax for Simplicity programs
 - Type inference and safety
 - Built-in jets and operations
 - Witness and parameter support
 
 ### 2. [Musk](../musk/)
 
-SDK for compiling, deploying, and spending Simplicity contracts in Rust applications.
+SDK for compiling, deploying, and spending Simplicity programs in Rust applications.
 
 **Key Features:**
-- High-level contract API wrapping SimplicityHL
+- High-level program API wrapping SimplicityHL
 - Taproot address generation
 - Transaction construction and signing
 - Network-agnostic design (works with regtest, testnet, mainnet)
 
 **Usage:**
 ```rust
-use musk::{Contract, Arguments};
+use musk::{Program, Arguments};
 
-let contract = Contract::from_file("my_contract.simf")?;
-let compiled = contract.instantiate(Arguments::default())?;
+let program = Program::from_file("my_program.simf")?;
+let compiled = program.instantiate(Arguments::default())?;
 let address = compiled.address(&elements::AddressParams::ELEMENTS);
 ```
 
 ### 3. [Spray](.)
 
-Testing workbench and CLI for Simplicity contracts on Elements/Liquid networks.
+Testing workbench and CLI for Simplicity programs on Elements/Liquid networks.
 
 **Key Features:**
 - Complete CLI with compile, deploy, redeem, and test commands
@@ -46,20 +46,20 @@ Testing workbench and CLI for Simplicity contracts on Elements/Liquid networks.
 
 **Usage:**
 ```bash
-# Compile a contract
-spray compile contract.simf
+# Compile a program
+spray compile program.simf
 
 # Deploy to regtest
-spray deploy contract.simf --amount 100000000
+spray deploy program.simf --amount 100000000
 
 # Redeem from a UTXO
 spray redeem txid:vout witness.json --compiled compiled.json
 
 # Full end-to-end test
-spray test --file contract.simf --name "My test"
+spray test --file program.simf --name "My test"
 
 # Deploy to testnet
-spray deploy contract.simf --network testnet --config musk.toml
+spray deploy program.simf --network testnet --config musk.toml
 ```
 
 ## Architecture
@@ -96,8 +96,8 @@ spray deploy contract.simf --network testnet --config musk.toml
 ### Benefits
 
 - **Musk** can be used in any Rust application (wallets, exchanges, dapps)
-- **Spray** tests contracts using the exact same code path as production
-- Changes to contract handling in **musk** automatically apply to **spray** tests
+- **Spray** tests programs using the exact same code path as production
+- Changes to program handling in **musk** automatically apply to **spray** tests
 - Clean dependency graph: `SimplicityHL ← Musk ← Spray`
 
 ## Getting Started
@@ -120,9 +120,9 @@ cd ../spray
 cargo install --path .
 ```
 
-### Quick Start: Testing a Contract
+### Quick Start: Testing a Program
 
-1. Write a Simplicity contract (`.simf` file):
+1. Write a Simplicity program (`.simf` file):
 
 ```rust
 // examples/hello.simf
@@ -140,10 +140,10 @@ spray test --file examples/hello.simf --name "Hello test"
 3. Use it in your application with musk:
 
 ```rust
-use musk::Contract;
+use musk::Program;
 
-let contract = Contract::from_file("examples/hello.simf")?;
-let compiled = contract.instantiate(musk::Arguments::default())?;
+let program = Program::from_file("examples/hello.simf")?;
+let compiled = program.instantiate(musk::Arguments::default())?;
 let address = compiled.address(&musk::elements::AddressParams::ELEMENTS);
 ```
 
@@ -152,29 +152,29 @@ let address = compiled.address(&musk::elements::AddressParams::ELEMENTS);
 ### Development & Testing Loop
 
 ```bash
-# 1. Write contract
-vim my_contract.simf
+# 1. Write program
+vim my_program.simf
 
 # 2. Compile and inspect
-spray compile my_contract.simf
+spray compile my_program.simf
 
 # 3. Test locally (end-to-end)
-spray test --file my_contract.simf --name "Test 1"
+spray test --file my_program.simf --name "Test 1"
 
 # 4. Test with witnesses
-spray test --file my_contract.simf --witness test.wit --name "Test 2"
+spray test --file my_program.simf --witness test.wit --name "Test 2"
 
 # 5. Test with lock time
-spray test --file my_contract.simf --lock-time 1000 --name "Test 3"
+spray test --file my_program.simf --lock-time 1000 --name "Test 3"
 
 # 6. Manual testing workflow
-spray compile my_contract.simf > compiled.json
-spray deploy my_contract.simf --amount 50000000  # Returns txid:vout
+spray compile my_program.simf > compiled.json
+spray deploy my_program.simf --amount 50000000  # Returns txid:vout
 # ... create witness based on sighash ...
 spray redeem <txid:vout> witness.json --compiled compiled.json
 
 # 7. Deploy to testnet (with config)
-spray deploy my_contract.simf --network testnet --config musk.toml
+spray deploy my_program.simf --network testnet --config musk.toml
 
 # 8. Integrate into application using musk
 ```
@@ -182,16 +182,16 @@ spray deploy my_contract.simf --network testnet --config musk.toml
 ### Production Deployment
 
 ```rust
-use musk::{Contract, Arguments, SpendBuilder};
+use musk::{Program, Arguments, SpendBuilder};
 
-// Load contract
-let contract = Contract::from_file("my_contract.simf")?;
-let compiled = contract.instantiate(Arguments::default())?;
+// Load program
+let program = Program::from_file("my_program.simf")?;
+let compiled = program.instantiate(Arguments::default())?;
 
 // Generate address for receiving funds
 let address = compiled.address(&elements::AddressParams::ELEMENTS);
 
-// Later, spend from the contract
+// Later, spend from the program
 let mut builder = SpendBuilder::new(compiled, utxo)
     .genesis_hash(genesis_hash);
 builder.add_output_simple(destination, amount, asset);
@@ -206,9 +206,9 @@ let tx = builder.finalize(witness)?;
 
 ## Examples
 
-### Simple Contracts
+### Simple Programs
 
-See [SimplicityHL/examples/](../SimplicityHL/examples/) for contract examples:
+See [SimplicityHL/examples/](../SimplicityHL/examples/) for program examples:
 - `cat.simf` - OP_CAT implementation
 - `ctv.simf` - CheckTemplateVerify
 - `p2pk.simf` - Pay to public key
@@ -246,7 +246,7 @@ See [spray/examples/](./examples/) for testing examples.
            │
            ↓
     ┌─────────────┐
-    │musk::Contract│
+    │musk::Program│
     └──────┬──────┘
            │
            ↓
@@ -263,9 +263,9 @@ See [spray/examples/](./examples/) for testing examples.
 ### Production Flow (Musk)
 
 ```
-Your App → musk::Contract → Compile
+Your App → musk::Program → Compile
                 ↓
-         CompiledContract → Address Generation
+         InstantiatedProgram → Address Generation
                 ↓
          SpendBuilder → Transaction Construction
                 ↓
@@ -276,9 +276,9 @@ Your App → musk::Contract → Compile
 
 1. **Musk is network-agnostic**: The `NodeClient` trait allows musk to work with any Elements-compatible node, making it suitable for regtest, testnet, and mainnet.
 
-2. **Spray uses musk exclusively**: All contract operations in spray go through musk, ensuring test coverage of production code paths.
+2. **Spray uses musk exclusively**: All program operations in spray go through musk, ensuring test coverage of production code paths.
 
-3. **Witness functions are closures**: This pattern allows witnesses to be computed based on the sighash, enabling signature-based contracts.
+3. **Witness functions are closures**: This pattern allows witnesses to be computed based on the sighash, enabling signature-based programs.
 
 4. **Re-export SimplicityHL types**: Musk re-exports necessary types from SimplicityHL (`Arguments`, `WitnessValues`, `Value`) so users don't need to depend on it directly.
 

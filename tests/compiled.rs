@@ -29,9 +29,9 @@ fn test_compiled_output_serialization() {
 
 #[test]
 fn test_from_compiled_creates_valid_output() {
-    let contract = musk::Contract::from_source("fn main() { assert!(true); }")
-        .expect("Failed to parse contract");
-    let compiled = contract
+    let program = musk::Program::from_source("fn main() { assert!(true); }")
+        .expect("Failed to parse program");
+    let compiled = program
         .instantiate(musk::Arguments::default())
         .expect("Failed to compile");
 
@@ -45,7 +45,7 @@ fn test_from_compiled_creates_valid_output() {
     // Program should be valid base64
     assert!(!output.program.is_empty());
 
-    // No witness for unsatisfied contract
+    // No witness for unsatisfied program
     assert!(output.witness.is_none());
 
     // Source should be preserved

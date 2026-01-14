@@ -47,7 +47,7 @@ pub fn redeem_command(
     network: Network,
     config: Option<PathBuf>,
 ) -> Result<(), SprayError> {
-    println!("{}", "Redeeming from Simplicity contract...".cyan().bold());
+    println!("{}", "Redeeming from Simplicity program...".cyan().bold());
     println!();
 
     // Parse UTXO reference
@@ -80,7 +80,7 @@ pub fn redeem_command(
     println!("  {} {} sat", "Amount:".bold(), amount);
     println!("  {} {asset}", "Asset:".bold());
 
-    // Load compiled contract
+    // Load compiled program
     let compiled_file = compiled_file.ok_or_else(|| {
         SprayError::FileFormatError("--compiled <file> is required for redeem command".into())
     })?;
@@ -88,18 +88,18 @@ pub fn redeem_command(
     println!();
     println!(
         "{} {}",
-        "Loading contract from:".dimmed(),
+        "Loading program from:".dimmed(),
         compiled_file.display()
     );
     let json_str = std::fs::read_to_string(&compiled_file)?;
     let output_data: CompiledOutput = serde_json::from_str(&json_str)?;
 
     let source = output_data.source.ok_or_else(|| {
-        SprayError::FileFormatError("Compiled contract must include source field".into())
+        SprayError::FileFormatError("Compiled program must include source field".into())
     })?;
 
-    let contract = musk::Contract::from_source(&source)?;
-    let compiled = contract.instantiate(musk::Arguments::default())?;
+    let program = musk::Program::from_source(&source)?;
+    let compiled = program.instantiate(musk::Arguments::default())?;
 
     // Load witness
     println!(

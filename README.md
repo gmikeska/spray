@@ -1,10 +1,10 @@
 # Spray
 
-Testing workbench for Simplicity contracts on Elements/Liquid networks.
+Testing workbench for Simplicity programs on Elements/Liquid networks.
 
 ## Overview
 
-Spray provides a comprehensive CLI and testing framework for Simplicity contracts. It uses [musk](../musk) for contract operations and can work with both ephemeral regtest nodes (for isolated testing) and external nodes (for testnet/mainnet deployments).
+Spray provides a comprehensive CLI and testing framework for Simplicity programs. It uses [musk](../musk) for program operations and can work with both ephemeral regtest nodes (for isolated testing) and external nodes (for testnet/mainnet deployments).
 
 ## Installation
 
@@ -17,61 +17,61 @@ cargo install --path .
 
 ### `spray compile`
 
-Compile a Simplicity contract and output the compiled program.
+Compile a Simplicity program and output the compiled result.
 
 ```bash
 # Basic compilation
-spray compile contract.simf
+spray compile program.simf
 
 # With arguments
-spray compile contract.simf --args args.json
+spray compile program.simf --args args.json
 
 # With witness (to see final transaction size)
-spray compile contract.simf --witness witness.json
+spray compile program.simf --witness witness.json
 
 # Output in different formats
-spray compile contract.simf --output hex
-spray compile contract.simf --output base64
-spray compile contract.simf --output json  # default
+spray compile program.simf --output hex
+spray compile program.simf --output base64
+spray compile program.simf --output json  # default
 ```
 
 The compile command outputs:
-- Contract Merkle Root (CMR)
-- Contract address (for receiving funds)
+- Commitment Merkle Root (CMR)
+- Program address (for receiving funds)
 - Program size in bytes
 - Compiled program (in requested format)
 
 ### `spray deploy`
 
-Deploy a contract to a network by funding its address.
+Deploy a program to a network by funding its address.
 
 ```bash
 # Deploy to local regtest (uses ephemeral node)
-spray deploy contract.simf --amount 100000000
+spray deploy program.simf --amount 100000000
 
-# Deploy pre-compiled contract
-spray compile contract.simf > compiled.json
+# Deploy pre-compiled program
+spray compile program.simf > compiled.json
 spray deploy compiled.json --amount 50000000
 
 # Deploy to testnet (requires config)
-spray deploy contract.simf \
+spray deploy program.simf \
     --network testnet \
     --config musk.toml \
     --amount 10000000
 
 # With arguments
-spray deploy contract.simf --args args.json --amount 100000000
+spray deploy program.simf --args args.json --amount 100000000
 ```
 
 The deploy command:
-1. Compiles the contract (if `.simf`) or loads it (if `.json`)
-2. Generates the contract address
+1. Compiles the program (if `.simf`) or loads it (if `.json`)
+2. Generates the program address
 3. Sends funds to the address
 4. Returns the funding UTXO (txid:vout)
 
 ### `spray redeem`
 
-Spend from a contract UTXO by providing a witness.
+Spend from a program UTXO by providing a witness.
 
 ```bash
 # Basic redemption (local regtest)
@@ -96,7 +96,7 @@ spray redeem <txid:vout> witness.json \
 
 The redeem command:
 1. Fetches the UTXO from the network
-2. Loads the compiled contract
+2. Loads the compiled program
 3. Builds a spending transaction
 4. Computes the sighash
 5. Finalizes with the provided witness
@@ -104,15 +104,15 @@ The redeem command:
 
 ### `spray test`
 
-Test a contract end-to-end (compile + deploy + redeem).
+Test a program end-to-end (compile + deploy + redeem).
 
 ```bash
 # Basic test
-spray test --file contract.simf --name "My test"
+spray test --file program.simf --name "My test"
 
 # With arguments and witness
 spray test \
-    --file contract.simf \
+    --file program.simf \
     --args args.json \
     --witness witness.json \
     --name "P2PK test"
@@ -125,12 +125,12 @@ spray test \
     --name "Time-locked vault"
 
 # Verbose output
-spray test --file contract.simf --name "Test" --verbose
+spray test --file program.simf --name "Test" --verbose
 ```
 
 The test command:
 1. Starts an ephemeral regtest node (or uses configured node)
-2. Compiles the contract
+2. Compiles the program
 3. Deploys it (creates and funds a UTXO)
 4. Attempts to spend from it with the witness
 5. Reports success or failure
@@ -148,8 +148,8 @@ Spray supports two network backends:
 - Perfect for rapid testing
 
 ```bash
-spray deploy contract.simf  # Uses ephemeral node
-spray test --file contract.simf --name "Test"  # Uses ephemeral node
+spray deploy program.simf  # Uses ephemeral node
+spray test --file program.simf --name "Test"  # Uses ephemeral node
 ```
 
 ### External Node (via Config)
@@ -158,7 +158,7 @@ spray test --file contract.simf --name "Test"  # Uses ephemeral node
 - Used for real deployments
 
 ```bash
-spray deploy contract.simf --network testnet --config musk.toml
+spray deploy program.simf --network testnet --config musk.toml
 spray redeem txid:vout witness.json --network testnet --config musk.toml
 ```
 
@@ -212,14 +212,14 @@ signature = "304402..."
 
 ```rust
 use spray::{TestRunner, TestCase};
-use musk::{Contract, Arguments, WitnessValues};
+use musk::{Program, Arguments, WitnessValues};
 
 // Create test environment
 let runner = TestRunner::new()?;
 
-// Load contract
-let contract = Contract::from_file("my_contract.simf")?;
-let compiled = contract.instantiate(Arguments::default())?;
+// Load program
+let program = Program::from_file("my_program.simf")?;
+let compiled = program.instantiate(Arguments::default())?;
 
 // Create test case
 let test = TestCase::new(runner.env(), compiled)
@@ -242,9 +242,9 @@ assert!(result.is_success());
 let runner = TestRunner::new()?;
 
 let tests = vec![
-    TestCase::new(runner.env(), contract1).name("Test 1"),
-    TestCase::new(runner.env(), contract2).name("Test 2"),
-    TestCase::new(runner.env(), contract3).name("Test 3"),
+    TestCase::new(runner.env(), program1).name("Test 1"),
+    TestCase::new(runner.env(), program2).name("Test 2"),
+    TestCase::new(runner.env(), program3).name("Test 3"),
 ];
 
 let results = runner.run_tests(tests);
@@ -252,15 +252,15 @@ let results = runner.run_tests(tests);
 
 ## Architecture
 
-Spray uses musk for all contract operations, ensuring test coverage of production code paths:
+Spray uses musk for all program operations, ensuring test coverage of production code paths:
 
 ```
 CLI Commands
     ↓
 ┌─────────────────────────────────────────┐
 │  compile → Compile & output program     │
-│  deploy  → Fund contract address        │
-│  redeem  → Spend from contract UTXO     │
+│  deploy  → Fund program address         │
+│  redeem  → Spend from program UTXO      │
 │  test    → Full end-to-end test         │
 └─────────────────────────────────────────┘
                 ↓
@@ -268,7 +268,7 @@ CLI Commands
         ├─ Ephemeral (regtest)
         └─ External (testnet/liquid)
                 ↓
-         musk::Contract
+         musk::Program
          musk::SpendBuilder
                 ↓
     Elements Transaction → Broadcast
@@ -276,17 +276,17 @@ CLI Commands
 
 ## Features
 
-- **Multiple commands**: Compile, deploy, redeem, and test contracts independently
+- **Multiple commands**: Compile, deploy, redeem, and test programs independently
 - **Network flexibility**: Use ephemeral regtest for testing or external nodes for deployments
 - **Automatic daemon management**: Regtest daemon started/stopped automatically
 - **Sighash-based witnesses**: Witness functions receive the transaction sighash
 - **Colored output**: Easy-to-read results with emoji indicators
-- **Lock time/sequence support**: Test time-locked contracts
+- **Lock time/sequence support**: Test time-locked programs
 - **Multiple file formats**: Support for JSON and TOML config files
 
 ## Examples
 
-See the [SimplicityHL examples](../SimplicityHL/examples/) directory for contract examples that work with spray.
+See the [SimplicityHL examples](../SimplicityHL/examples/) directory for program examples that work with spray.
 
 Example workflow:
 

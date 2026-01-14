@@ -1,6 +1,6 @@
-//! Compiled contract serialization format
+//! Compiled program serialization format
 //!
-//! This module provides types for serializing compiled Simplicity contracts
+//! This module provides types for serializing compiled Simplicity programs
 //! to JSON for storage and later deployment.
 //!
 //! # Example
@@ -26,7 +26,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Serialized format for compiled Simplicity contracts
+/// Serialized format for compiled Simplicity programs
 ///
 /// This format can be saved to JSON and later reloaded for deployment.
 ///
@@ -34,10 +34,10 @@ use std::collections::HashMap;
 ///
 /// ```
 /// use spray::compiled::CompiledOutput;
-/// use musk::{Arguments, Contract};
+/// use musk::{Arguments, Program};
 ///
-/// let contract = Contract::from_source("fn main() { assert!(true); }").unwrap();
-/// let compiled = contract.instantiate(Arguments::default()).unwrap();
+/// let program = Program::from_source("fn main() { assert!(true); }").unwrap();
+/// let compiled = program.instantiate(Arguments::default()).unwrap();
 /// let output = CompiledOutput::from_compiled(&compiled, None);
 ///
 /// // CMR is a 64-character hex string (32 bytes)
@@ -62,9 +62,9 @@ pub struct CompiledOutput {
 }
 
 impl CompiledOutput {
-    /// Create a new compiled output from a musk `CompiledContract`
+    /// Create a new compiled output from a musk `InstantiatedProgram`
     #[must_use]
-    pub fn from_compiled(compiled: &musk::CompiledContract, source: Option<String>) -> Self {
+    pub fn from_compiled(compiled: &musk::InstantiatedProgram, source: Option<String>) -> Self {
         use base64::{engine::general_purpose::STANDARD, Engine};
 
         let program_bytes = compiled.inner().commit().to_vec_without_witness();
@@ -86,8 +86,8 @@ impl CompiledOutput {
     /// Create from a satisfied program (includes witness)
     #[must_use]
     pub fn from_satisfied(
-        satisfied: &musk::contract::SatisfiedContract,
-        compiled: &musk::CompiledContract,
+        satisfied: &musk::program::SatisfiedProgram,
+        compiled: &musk::InstantiatedProgram,
         source: Option<String>,
     ) -> Self {
         use base64::{engine::general_purpose::STANDARD, Engine};
