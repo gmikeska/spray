@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 /// # Errors
 ///
 /// Returns an error if the format is invalid.
-fn parse_utxo_ref(s: &str) -> Result<(musk::Txid, u32), SprayError> {
+pub fn parse_utxo_ref(s: &str) -> Result<(musk::Txid, u32), SprayError> {
     let parts: Vec<&str> = s.split(':').collect();
     if parts.len() != 2 {
         return Err(SprayError::InvalidUtxoRef(format!(

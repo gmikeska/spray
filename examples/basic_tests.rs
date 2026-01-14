@@ -1,11 +1,22 @@
 //! Example: Testing Simplicity contracts with spray
 //!
-//! Run with: cargo test --example basic_tests
+//! Run with: cargo run --example basic_tests
+//!
+//! Note: This example requires a running elementsd daemon.
 
 use musk::{Arguments, Contract, WitnessValues};
 use spray::{TestCase, TestRunner};
 
-#[test]
+fn main() {
+    println!("Running spray examples...\n");
+    
+    test_cat_contract();
+    test_p2pk_contract();
+    test_multiple_contracts();
+    
+    println!("\nAll examples completed!");
+}
+
 fn test_cat_contract() {
     let runner = TestRunner::new().expect("Failed to create test runner");
 
@@ -25,10 +36,9 @@ fn test_cat_contract() {
     assert!(result.is_success(), "OP_CAT test should succeed");
 }
 
-#[test]
 fn test_p2pk_contract() {
     use musk::util;
-    use musk::{Value, WitnessName};
+    use musk::{Value, ValueConstructible, WitnessName};
     use std::collections::HashMap;
 
     let runner = TestRunner::new().expect("Failed to create test runner");
@@ -66,7 +76,6 @@ fn test_p2pk_contract() {
     assert!(result.is_success(), "P2PK test should succeed");
 }
 
-#[test]
 fn test_multiple_contracts() {
     let runner = TestRunner::new().expect("Failed to create test runner");
 

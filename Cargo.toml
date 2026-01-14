@@ -28,4 +28,5 @@ toml = "0.8"
 base64 = "0.22"
 
 [dev-dependencies]
+tempfile = "3"
 

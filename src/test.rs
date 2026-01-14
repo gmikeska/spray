@@ -1,4 +1,7 @@
 //! Test case definition and execution
+//!
+//! This module provides the [`TestCase`] builder for defining contract tests
+//! and the [`TestResult`] enum for test outcomes.
 
 use crate::client::ElementsClient;
 use crate::env::TestEnv;
@@ -9,18 +12,65 @@ use musk::elements::{confidential, LockTime, Sequence};
 use musk::{CompiledContract, SpendBuilder, WitnessValues};
 
 /// Result of a test execution
+///
+/// # Example
+///
+/// ```
+/// use spray::TestResult;
+/// use musk::elements::Txid;
+/// use std::str::FromStr;
+///
+/// let txid = Txid::from_str(
+///     "0000000000000000000000000000000000000000000000000000000000000000"
+/// ).unwrap();
+///
+/// let success = TestResult::Success { txid };
+/// assert!(success.is_success());
+/// assert!(!success.is_failure());
+///
+/// let failure = TestResult::Failure { error: "test failed".into() };
+/// assert!(failure.is_failure());
+/// assert!(!failure.is_success());
+/// ```
 #[derive(Debug, Clone)]
 pub enum TestResult {
+    /// Test passed, contains the spending transaction ID
     Success { txid: musk::Txid },
+    /// Test failed, contains the error message
     Failure { error: String },
 }
 
 impl TestResult {
+    /// Returns `true` if this is a successful test result
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use spray::TestResult;
+    /// use musk::elements::Txid;
+    /// use std::str::FromStr;
+    ///
+    /// let txid = Txid::from_str(
+    ///     "0000000000000000000000000000000000000000000000000000000000000000"
+    /// ).unwrap();
+    /// let result = TestResult::Success { txid };
+    /// assert!(result.is_success());
+    /// ```
     #[must_use]
     pub const fn is_success(&self) -> bool {
         matches!(self, Self::Success { .. })
     }
 
+    /// Returns `true` if this is a failed test result
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use spray::TestResult;
+    ///
+    /// let result = TestResult::Failure { error: "assertion failed".into() };
+    /// assert!(result.is_failure());
+    /// ```
     #[must_use]
     pub const fn is_failure(&self) -> bool {
         matches!(self, Self::Failure { .. })

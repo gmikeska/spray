@@ -1,11 +1,48 @@
 //! Compiled contract serialization format
+//!
+//! This module provides types for serializing compiled Simplicity contracts
+//! to JSON for storage and later deployment.
+//!
+//! # Example
+//!
+//! ```
+//! use spray::compiled::CompiledOutput;
+//! use std::collections::HashMap;
+//!
+//! let output = CompiledOutput {
+//!     cmr: "deadbeef".to_string(),
+//!     program: "SGVsbG8=".to_string(),
+//!     witness: None,
+//!     witness_types: HashMap::new(),
+//!     program_size: 5,
+//!     source: None,
+//! };
+//!
+//! let json = serde_json::to_string(&output).unwrap();
+//! let parsed: CompiledOutput = serde_json::from_str(&json).unwrap();
+//! assert_eq!(parsed.cmr, output.cmr);
+//! ```
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Serialized format for compiled Simplicity contracts
 ///
-/// This format can be saved to JSON and later reloaded for deployment
+/// This format can be saved to JSON and later reloaded for deployment.
+///
+/// # Example
+///
+/// ```
+/// use spray::compiled::CompiledOutput;
+/// use musk::{Arguments, Contract};
+///
+/// let contract = Contract::from_source("fn main() { assert!(true); }").unwrap();
+/// let compiled = contract.instantiate(Arguments::default()).unwrap();
+/// let output = CompiledOutput::from_compiled(&compiled, None);
+///
+/// // CMR is a 64-character hex string (32 bytes)
+/// assert_eq!(output.cmr.len(), 64);
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompiledOutput {
     /// Commitment Merkle Root (hex)
@@ -75,6 +112,25 @@ impl CompiledOutput {
     /// # Errors
     ///
     /// Returns an error if the base64 is invalid.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use spray::compiled::CompiledOutput;
+    /// use std::collections::HashMap;
+    ///
+    /// let output = CompiledOutput {
+    ///     cmr: "deadbeef".to_string(),
+    ///     program: "SGVsbG8gV29ybGQ=".to_string(), // "Hello World"
+    ///     witness: None,
+    ///     witness_types: HashMap::new(),
+    ///     program_size: 11,
+    ///     source: None,
+    /// };
+    ///
+    /// let bytes = output.decode_program().unwrap();
+    /// assert_eq!(bytes, b"Hello World");
+    /// ```
     pub fn decode_program(&self) -> Result<Vec<u8>, base64::DecodeError> {
         use base64::{engine::general_purpose::STANDARD, Engine};
         STANDARD.decode(&self.program)
@@ -82,9 +138,40 @@ impl CompiledOutput {
 
     /// Decode the witness bytes from base64
     ///
+    /// Returns an empty vector if no witness is present.
+    ///
     /// # Errors
     ///
-    /// Returns an error if the base64 is invalid or witness is not present.
+    /// Returns an error if the base64 is invalid.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use spray::compiled::CompiledOutput;
+    /// use std::collections::HashMap;
+    ///
+    /// // With witness
+    /// let output = CompiledOutput {
+    ///     cmr: "deadbeef".to_string(),
+    ///     program: "AA==".to_string(),
+    ///     witness: Some("dGVzdA==".to_string()), // "test"
+    ///     witness_types: HashMap::new(),
+    ///     program_size: 1,
+    ///     source: None,
+    /// };
+    /// assert_eq!(output.decode_witness().unwrap(), b"test");
+    ///
+    /// // Without witness
+    /// let output_no_witness = CompiledOutput {
+    ///     cmr: "deadbeef".to_string(),
+    ///     program: "AA==".to_string(),
+    ///     witness: None,
+    ///     witness_types: HashMap::new(),
+    ///     program_size: 1,
+    ///     source: None,
+    /// };
+    /// assert!(output_no_witness.decode_witness().unwrap().is_empty());
+    /// ```
     pub fn decode_witness(&self) -> Result<Vec<u8>, base64::DecodeError> {
         use base64::{engine::general_purpose::STANDARD, Engine};
 

@@ -1,8 +1,29 @@
 //! Error types for spray operations
+//!
+//! This module defines the [`SprayError`] type which encompasses all errors
+//! that can occur during spray operations.
+//!
+//! # Example
+//!
+//! ```
+//! use spray::SprayError;
+//!
+//! // Create error variants directly
+//! let env_err = SprayError::EnvironmentError("failed to init".into());
+//! let config_err = SprayError::ConfigError("missing file".into());
+//! let parse_err = SprayError::ParseError("invalid syntax".into());
+//!
+//! // Errors implement Display
+//! assert!(env_err.to_string().contains("environment"));
+//! assert!(config_err.to_string().contains("Configuration"));
+//! ```
 
 use thiserror::Error;
 
 /// Errors that can occur during spray operations
+///
+/// Each variant represents a different category of error that can occur
+/// when using spray for contract testing.
 #[derive(Debug, Error)]
 pub enum SprayError {
     #[error("Failed to setup test environment: {0}")]
