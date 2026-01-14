@@ -48,7 +48,7 @@ fn test_load_witness_toml() {
 fn test_invalid_extension_error() {
     let file = create_temp_file(".txt", "some content");
     let result = load_arguments(file.path());
-    
+
     assert!(result.is_err());
     let err = result.unwrap_err();
     match err {
@@ -63,7 +63,7 @@ fn test_invalid_extension_error() {
 fn test_missing_extension_error() {
     // Create a path without extension
     let result = load_arguments(Path::new("/tmp/no_extension_file_that_does_not_exist"));
-    
+
     assert!(result.is_err());
     // Could be either FileFormatError (no extension) or IoError (file not found)
     // depending on which check happens first
@@ -72,7 +72,7 @@ fn test_missing_extension_error() {
 #[test]
 fn test_nonexistent_file_error() {
     let result = load_arguments(Path::new("/nonexistent/path/file.json"));
-    
+
     assert!(result.is_err());
     let err = result.unwrap_err();
     match err {
@@ -85,7 +85,7 @@ fn test_nonexistent_file_error() {
 fn test_invalid_json_error() {
     let file = create_temp_file(".json", "{ invalid json }");
     let result = load_arguments(file.path());
-    
+
     assert!(result.is_err());
     let err = result.unwrap_err();
     match err {
@@ -98,7 +98,7 @@ fn test_invalid_json_error() {
 fn test_invalid_toml_error() {
     let file = create_temp_file(".toml", "[[invalid toml");
     let result = load_arguments(file.path());
-    
+
     assert!(result.is_err());
     let err = result.unwrap_err();
     match err {
@@ -108,4 +108,3 @@ fn test_invalid_toml_error() {
         _ => panic!("Expected ParseError, got {:?}", err),
     }
 }
-

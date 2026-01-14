@@ -8,7 +8,7 @@ fn test_compiled_output_serialization() {
     let output = CompiledOutput {
         cmr: "deadbeef".to_string(),
         program: "SGVsbG8gV29ybGQ=".to_string(), // "Hello World" in base64
-        witness: Some("dGVzdA==".to_string()),    // "test" in base64
+        witness: Some("dGVzdA==".to_string()),   // "test" in base64
         witness_types: HashMap::new(),
         program_size: 11,
         source: Some("fn main() { assert!(true); }".to_string()),
@@ -18,8 +18,7 @@ fn test_compiled_output_serialization() {
     let json = serde_json::to_string(&output).expect("Failed to serialize");
 
     // Deserialize back
-    let deserialized: CompiledOutput =
-        serde_json::from_str(&json).expect("Failed to deserialize");
+    let deserialized: CompiledOutput = serde_json::from_str(&json).expect("Failed to deserialize");
 
     assert_eq!(deserialized.cmr, output.cmr);
     assert_eq!(deserialized.program, output.program);
@@ -36,7 +35,8 @@ fn test_from_compiled_creates_valid_output() {
         .instantiate(musk::Arguments::default())
         .expect("Failed to compile");
 
-    let output = CompiledOutput::from_compiled(&compiled, Some("fn main() { assert!(true); }".to_string()));
+    let output =
+        CompiledOutput::from_compiled(&compiled, Some("fn main() { assert!(true); }".to_string()));
 
     // CMR should be a valid hex string (64 chars for 32 bytes)
     assert_eq!(output.cmr.len(), 64);
@@ -49,7 +49,10 @@ fn test_from_compiled_creates_valid_output() {
     assert!(output.witness.is_none());
 
     // Source should be preserved
-    assert_eq!(output.source, Some("fn main() { assert!(true); }".to_string()));
+    assert_eq!(
+        output.source,
+        Some("fn main() { assert!(true); }".to_string())
+    );
 }
 
 #[test]
@@ -115,4 +118,3 @@ fn test_serialization_skips_none_fields() {
     assert!(!json.contains("\"witness\":"));
     assert!(!json.contains("\"source\":"));
 }
-

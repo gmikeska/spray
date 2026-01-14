@@ -9,11 +9,11 @@ use spray::{TestCase, TestRunner};
 
 fn main() {
     println!("Running spray examples...\n");
-    
+
     test_cat_contract();
     test_p2pk_contract();
     test_multiple_contracts();
-    
+
     println!("\nAll examples completed!");
 }
 
