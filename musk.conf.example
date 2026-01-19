@@ -4,7 +4,7 @@
 # This configuration connects to the same Elements node used by
 # sats-asset-manager-api (Liquid testnet).
 #
-# Copy to musk.toml to use.
+# Copy to musk.conf to use.
 
 # =============================================================================
 # Network Configuration
