@@ -156,6 +156,13 @@ enum Commands {
 
     /// Manage Elements regtest daemon
     Daemon,
+
+    /// Initialize a new Simplicity project
+    Init {
+        /// Overwrite existing musk.conf if present
+        #[arg(short, long)]
+        force: bool,
+    },
 }
 
 #[allow(clippy::too_many_lines)]
@@ -296,6 +303,10 @@ fn main() -> Result<(), SprayError> {
         Commands::Daemon => {
             println!("{}", "Daemon management not yet implemented".yellow());
             println!("The daemon is automatically started when running tests");
+        }
+
+        Commands::Init { force } => {
+            commands::init_command(force)?;
         }
     }
 
