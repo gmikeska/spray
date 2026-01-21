@@ -66,11 +66,7 @@ pub fn init_command(force: bool) -> Result<(), SprayError> {
     // Check if musk directory exists
     if musk_dir.exists() {
         if force {
-            println!(
-                "{} {}",
-                "Directory exists:".yellow(),
-                musk_dir.display()
-            );
+            println!("{} {}", "Directory exists:".yellow(), musk_dir.display());
         } else {
             println!(
                 "{} {} {}",
@@ -98,17 +94,10 @@ pub fn init_command(force: bool) -> Result<(), SprayError> {
             musk_conf.display()
         );
         println!();
-        println!(
-            "{}",
-            "Use --force to overwrite existing musk.conf".yellow()
-        );
+        println!("{}", "Use --force to overwrite existing musk.conf".yellow());
     } else {
         if musk_conf.exists() {
-            println!(
-                "{} {}",
-                "Overwriting:".yellow(),
-                musk_conf.display()
-            );
+            println!("{} {}", "Overwriting:".yellow(), musk_conf.display());
         }
         fs::write(musk_conf, MUSK_CONF_TEMPLATE)?;
         println!(
@@ -123,10 +112,16 @@ pub fn init_command(force: bool) -> Result<(), SprayError> {
     println!("{}", "✓ Project initialized!".green().bold());
     println!();
     println!("{}", "Next steps:".bold());
-    println!("  1. Edit {} with your node credentials", "musk.conf".cyan());
-    println!("  2. Add your {} files to the {} directory", ".simf".cyan(), "musk/".cyan());
+    println!(
+        "  1. Edit {} with your node credentials",
+        "musk.conf".cyan()
+    );
+    println!(
+        "  2. Add your {} files to the {} directory",
+        ".simf".cyan(),
+        "musk/".cyan()
+    );
     println!("  3. Run {} to test your programs", "spray test".cyan());
 
     Ok(())
 }
-
