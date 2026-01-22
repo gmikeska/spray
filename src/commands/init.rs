@@ -10,42 +10,45 @@ const MUSK_CONF_TEMPLATE: &str = r#"# Musk Configuration
 # ==================
 # 
 # Configure connection to your Elements/Liquid node.
-
-# =============================================================================
-# Network Configuration
-# =============================================================================
-[network]
-# Network type - determines default ports and address formats
-# Options:
+# Each section ([dev], [test], [prod]) defines an environment.
+# Select the active environment with MUSK_ENV (defaults to "dev").
+#
+# Network options:
 #   - "regtest"   : Local development/testing (default port: 18884)
 #   - "testnet"   : Liquid testnet (default port: 18892)
 #   - "liquidv1"  : Liquid mainnet (default port: 7041)
+
+# =============================================================================
+# Development Environment
+# =============================================================================
+[dev]
 network = "regtest"
-
-# =============================================================================
-# RPC Connection
-# =============================================================================
-[rpc]
-# Elements/Liquid node RPC endpoint
 url = "http://127.0.0.1:18884"
-
-# RPC authentication credentials
-# These should match your elements.conf settings
+wallet = "musk"
 user = "user"
 password = "password"
+# genesis_hash = "your-genesis-hash-here"
 
 # =============================================================================
-# Chain Configuration  
+# Test Environment
 # =============================================================================
-[chain]
-# Genesis block hash - required for transaction signing (sighash computation)
-# 
-# If not provided, musk will fetch it automatically from the node.
-# Specifying it here avoids an extra RPC call and ensures consistency.
-#
-# To find your genesis hash, run:
-#   elements-cli getblockhash 0
-#
+[test]
+network = "regtest"
+url = "http://127.0.0.1:18884"
+wallet = "musk"
+user = "user"
+password = "password"
+# genesis_hash = "your-genesis-hash-here"
+
+# =============================================================================
+# Production Environment
+# =============================================================================
+[prod]
+network = "regtest"
+url = "http://127.0.0.1:18884"
+wallet = "musk"
+user = "user"
+password = "password"
 # genesis_hash = "your-genesis-hash-here"
 "#;
 

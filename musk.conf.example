@@ -1,57 +1,45 @@
-# Musk Configuration - Matching sats-asset-manager-api
-# =====================================================
+# Musk Configuration Example
+# ==========================
 # 
-# This configuration connects to the same Elements node used by
-# sats-asset-manager-api (Liquid testnet).
+# This example shows a typical multi-environment setup.
+# Copy to musk.conf and customize for your setup.
 #
-# Copy to musk.conf to use.
+# Select the active environment with MUSK_ENV (defaults to "dev").
+#
+# Network options:
+#   - "regtest"   : Local development/testing (default port: 18884)
+#   - "testnet"   : Liquid testnet (default port: 18892)
+#   - "liquidv1"  : Liquid mainnet (default port: 7041)
 
 # =============================================================================
-# Network Configuration
+# Development Environment - Local regtest node
 # =============================================================================
-[network]
-# Liquid testnet (same as sats-asset-manager-api)
+[dev]
+network = "regtest"
+url = "http://127.0.0.1:18884"
+wallet = "musk_dev"
+user = "user"
+password = "password"
+# genesis_hash = "varies-per-regtest-chain"
+
+# =============================================================================
+# Test Environment - Liquid testnet
+# =============================================================================
+[test]
 network = "testnet"
-
-# =============================================================================
-# RPC Connection
-# =============================================================================
-[rpc]
-# Same node as sats-asset-manager-api uses
-# (from ELEMENTS_RPC_URL, ELEMENTS_RPC_USER, ELEMENTS_RPC_PASSWORD env vars)
-url = "http://64.181.201.136:18891"
+url = "http://127.0.0.1:18892"
+wallet = "musk_test"
 user = "elements"
 password = "elementspass"
-
-# =============================================================================
-# Chain Configuration  
-# =============================================================================
-[chain]
-# Liquid testnet genesis hash
-# If not set, will be fetched from the node automatically
 genesis_hash = "a771d8a8e75d8fa1b9bc08af6a5bde4f4fb4d7f01bd8b4b36e7cd97fb4b3d4e3"
 
 # =============================================================================
-# Alternative Configurations
+# Production Environment - Liquid mainnet
 # =============================================================================
-
-# --- Local Regtest (for isolated testing with spray) ---
-# [network]
-# network = "regtest"
-# 
-# [rpc]
-# url = "http://127.0.0.1:18884"
-# user = "user"
-# password = "password"
-
-# --- Liquid Mainnet ---
-# [network]
-# network = "liquidv1"
-# 
-# [rpc]
-# url = "http://127.0.0.1:7041"
-# user = "your-mainnet-user"
-# password = "your-mainnet-password"
-# 
-# [chain]
-# genesis_hash = "1466275836220db2944ca059a3a10ef6fd2ea684b0688d2c379296888a206003"
+[prod]
+network = "liquidv1"
+url = "http://127.0.0.1:7041"
+wallet = "musk_prod"
+user = "your-mainnet-user"
+password = "your-mainnet-password"
+genesis_hash = "1466275836220db2944ca059a3a10ef6fd2ea684b0688d2c379296888a206003"
